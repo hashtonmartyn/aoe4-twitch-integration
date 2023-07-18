@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "aoe4-twitch-integration"
+version = "0.1.0"
+description = ""
+authors = ["Henry Ashton-Martyn <henry.ashton-martyn@adscale.co.nz>"]
+readme = "README.md"
+packages = [{include = "aoe4_twitch_integration"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+uvicorn = {extras = ["standard"], version = "^0.22.0"}
+flask = "^2.3.2"
+flask-dance = "^7.0.0"
+flask-cors = "^4.0.0"
+fastapi = "^0.100.0"
+authlib = "^1.2.1"
+itsdangerous = "^2.1.2"
+httpx = "^0.24.1"
+fastapi-csrf-protect = "^0.3.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
