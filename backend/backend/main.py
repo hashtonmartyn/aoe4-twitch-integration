@@ -1,20 +1,19 @@
-import string
-from random import choice
-
-import httpx
+from authlib.integrations.base_client import OAuthError
 from authlib.integrations.starlette_client import OAuth
 from fastapi import FastAPI, HTTPException
-from httpx import QueryParams
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from fastapi_csrf_protect import CsrfProtect
 from pydantic import BaseModel
+from os.path import dirname, realpath, pardir, join, abspath
+from loguru import logger
 
 
 def get_twitch_client_secret() -> str:
-    with open("twitch_client_secret") as fin:
+    secret_path = abspath(join(dirname(realpath(__file__)), pardir, "twitch_client_secret"))
+    with open(secret_path) as fin:
         return fin.read()
 
 
@@ -61,20 +60,27 @@ oauth.register(
 @app.get("/login/twitch")
 async def login_via_twitch(request: Request):
     redirect_uri = request.url_for("auth_via_twitch")
-
     resp = await oauth.twitch.authorize_redirect(request, redirect_uri=redirect_uri)
     return resp
 
 
 @app.get("/auth/twitch")
 async def auth_via_twitch(request: Request):
-    print(request.url)
-    token = await oauth.twitch.authorize_access_token(
-        request,
-        client_id=TWITCH_CLIENT_ID,
-        client_secret=TWITCH_CLIENT_SECRET,
-        grant_type="authorization_code"
-    )
+    try:
+        token = await oauth.twitch.authorize_access_token(
+            request,
+            client_id=TWITCH_CLIENT_ID,
+            client_secret=TWITCH_CLIENT_SECRET,
+            grant_type="authorization_code"
+        )
+    except OAuthError as err:
+        logger.error("Failed to authenticate user, error: ", err)
+        error_name = request.query_params.get("error", "unknown_error")
+        error_description = request.query_params.get("error_description", "no_error_description")
+
+        return RedirectResponse(
+            f"http://localhost:5173/TwitchAuth?error={error_name}&error_description={error_description}",
+        )
 
     access_token = token["access_token"]
 
