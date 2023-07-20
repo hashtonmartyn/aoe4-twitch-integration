@@ -11,9 +11,9 @@ import Menubar from "primevue/menubar";
 import { ref } from "vue";
 
 const items = ref([
-  { label: 'Home' },
-  { label: 'About' },
-  { label: 'Connect With Twitch'}
+  { label: 'Home', to: '/' },
+  { label: 'About', to: '/TwitchAuth'},
+  { label: 'Connect With Twitch', to: 'Login'}
 ]);
 
 </script>

@@ -1,2 +1,4 @@
 .idea
 **/node_modules
+backend/twitch_client_secret
+**/*/.pyc
