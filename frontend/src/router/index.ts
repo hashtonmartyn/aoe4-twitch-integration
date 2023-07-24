@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import Login from '../views/Login.vue'
 import TwitchAuth from "../views/TwitchAuth.vue";
+import PollManagement from "../views/PollManagement.vue";
+import TestUser from "@/views/TestUser.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +22,16 @@ const router = createRouter({
       path: '/TwitchAuth',
       name: 'TwitchAuth',
       component: TwitchAuth
+    },
+    {
+      path: '/PollManagement',
+      name: 'PollManagement',
+      component: PollManagement
+    },
+    {
+      path: '/TestUser',
+      name: 'TestUser',
+      component: TestUser
     },
     {
       path: '/about',
