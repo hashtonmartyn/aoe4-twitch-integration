@@ -1,3 +1,5 @@
+from redis import asyncio as aioredis
+import httpx
 from authlib.integrations.base_client import OAuthError
 from authlib.integrations.starlette_client import OAuth
 from fastapi import FastAPI, HTTPException
@@ -57,6 +59,13 @@ oauth.register(
 )
 
 
+redis = aioredis.from_url("redis://localhost")
+
+
+class Poll(BaseModel):
+    result: str
+
+
 @app.get("/login/twitch")
 async def login_via_twitch(request: Request):
     redirect_uri = request.url_for("auth_via_twitch")
@@ -96,4 +105,31 @@ async def twitch_access_token(request: Request):
         raise HTTPException(status_code=404, detail="No twitch access token found in the user's session")
 
     return JSONResponse(content={"access_token": access_token})
+
+
+@app.post("/poll_result")
+async def poll_result(request: Request, poll: Poll):
+    access_token = request.session.get("twitch_access_token")
+    if not access_token:
+        raise HTTPException(status_code=404, detail="No twitch access token found in the user's session")
+
+    async with httpx.AsyncClient() as client:
+        twitch_user_response = await client.get(
+            "https://api.twitch.tv/helix/users",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Client-Id": TWITCH_CLIENT_ID
+            }
+        )
+    twitch_user_response.raise_for_status()
+    twitch_user_response_data = twitch_user_response.json()
+
+    user_id = twitch_user_response_data["data"][0]["display_name"]
+
+    await redis.set(user_id, poll.result)
+
+
+@app.get("/poll_result/{display_name}")
+async def poll_result(display_name: str):
+    return await redis.get(display_name)
 

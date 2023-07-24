@@ -4,6 +4,10 @@
     {{pollSubmissionMessage.content}}
   </Message>
 
+  <Message v-if="resultSubmissionMessage.content.length > 0" :severity="resultSubmissionMessage.severity">
+    {{resultSubmissionMessage.content}}
+  </Message>
+
   <Accordion :active-index="0">
     <AccordionTab header="Game Configuration">
       <div class="p-inputgroup flex-1 mb-4">
@@ -77,6 +81,11 @@ const pollSubmissionMessage = ref({
   severity: "",
   content: ""
 })
+const resultSubmissionMessage = ref({
+  severity: "",
+  content: ""
+})
+
 const numberOfPlayers = ref(2)
 
 function getRandomOption(): string {
@@ -93,6 +102,8 @@ const players = ref({
   7: {id: 7, name: "", option: getRandomOption()},
   8: {id: 8, name: "", option: getRandomOption()}
 })
+
+let lastPollEventId = ""
 
 function randomiseOptions() {
   Object.values(players.value).forEach(player => player.option = getRandomOption())
@@ -189,19 +200,49 @@ function onMessage(event: MessageEvent){
 
 function handleNotification(data: any) {
   console.log(data)
+  if (data.payload.event.id == lastPollEventId) {
+    return
+  }
+
+  lastPollEventId = data.payload.event.id
+
   if (data.payload.subscription.type.startsWith("channel.poll")) {
     handleChannelPollMessage(data)
   }
+
+  if (data.payload.subscription.type == "channel.poll.end") {
+    handleChannelPollEnd()
+  }
 }
+
+function handleChannelPollEnd() {
+  resultSubmissionMessage.value.content = ""
+  resultSubmissionMessage.value.severity = ""
+
+  axios.post(
+      "/poll_result",
+      {result: winningChoice.value},
+      {withCredentials: true}
+  ).then(result => {
+    if (result.status != 200) {
+      resultSubmissionMessage.value.content = "Failed to set poll result in the backend, poll result will not make it to the game :("
+      resultSubmissionMessage.value.severity = "error"
+    }
+  }).catch(_ => {
+    resultSubmissionMessage.value.content = "Failed to set poll result in the backend, poll result will not make it to the game :("
+    resultSubmissionMessage.value.severity = "error"
+  })
+}
+
+const winningChoice = ref("")
 
 function handleChannelPollMessage(data: any) {
   const pollTitle = data.payload.event.title
   const choiceLabels = data.payload.event.choices.map((choice: any) => choice.title)
   const pollData = data.payload.event.choices.map((choice: any) => choice.bits_votes + choice.channel_points_votes + choice.votes)
 
-  console.log(pollTitle)
-  console.log(choiceLabels)
-  console.log(pollData)
+  const tempWinningChoice = choiceLabels[pollData.indexOf(Math.max(...pollData))]
+  winningChoice.value = tempWinningChoice
 
   chartData.value.labels = choiceLabels
   chartData.value.datasets[0].data = pollData

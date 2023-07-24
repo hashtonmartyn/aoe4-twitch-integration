@@ -32,7 +32,7 @@ if (route.query.error != null) {
   showErrorMessage.value = true
 }
 
-axios.get("/twitch_access_token").then(result => {
+axios.get("/twitch_access_token", {withCredentials: true}).then(result => {
   const token = result.data.access_token
   userStore.setToken(token)
   console.log(result)
