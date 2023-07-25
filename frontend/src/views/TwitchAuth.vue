@@ -1,5 +1,5 @@
 <template>
-  this is the twitch redirect page
+  <Message severity="success">Twitch authentication successful, redirecting you to Poll Management</Message>
   <Dialog v-model:visible="showErrorMessage" modal>
     <template #header>
       <i class="pi pi-exclamation-triangle"/>
@@ -7,6 +7,7 @@
     </template>
     <p>Error: {{error}}</p>
     <p>Error description: {{errorDescription}}</p>
+    <p>Try clicking the Connect With Twitch button again?</p>
   </Dialog>
 </template>
 
@@ -16,6 +17,7 @@ import {ref} from "vue";
 import Dialog from 'primevue/dialog';
 import axios from "axios";
 import {useUserStore} from "@/stores/user";
+import Message from "primevue/message";
 
 const userStore = useUserStore()
 
@@ -39,6 +41,8 @@ axios.get("/twitch_access_token", {withCredentials: true}).then(result => {
 })
 
 setTimeout(() => {
-  console.log("after some time")
+  if (!showErrorMessage.value) {
+    router.push("/PollManagement")
+  }
 }, 3000)
 </script>

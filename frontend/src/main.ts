@@ -22,7 +22,6 @@ app.use(pinia)
 app.use(router)
 app.use(PrimeVue)
 
-// axios.defaults.withCredentials = true;
 axios.defaults.baseURL = 'http://localhost:8000/';  // the FastAPI backend
 
 app.mount('#app')

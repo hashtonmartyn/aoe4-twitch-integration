@@ -12,8 +12,8 @@ import { ref } from "vue";
 
 const items = ref([
   { label: 'Home', to: '/' },
-  { label: 'About', to: '/TwitchAuth'},
-  { label: 'Connect With Twitch', to: 'Login'},
+  { label: 'About', to: '/About'},
+  { label: 'Connect With Twitch', to: 'ConnectWithTwitch'},
   { label: 'Poll Management', to: '/PollManagement'}
 ]);
 
