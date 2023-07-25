@@ -45,7 +45,6 @@
 <script async lang="ts" setup>
 import {useUserStore} from "../stores/user";
 import {useRouter} from "vue-router";
-import {useTwitchClientStore} from "../stores/twitchClient";
 import {ConnectionState, EventSubWsClient} from "../clients/twitchEventSubWsClient";
 import {ref} from "vue";
 import Chart from "primevue/chart";
@@ -56,9 +55,9 @@ import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import Button from "primevue/button";
 import axios from "axios";
+import config from "../config";
 
 const userStore = useUserStore()
-const twitchClientStore = useTwitchClientStore()
 const router = useRouter()
 
 if (!userStore.isAuthenticated) {
@@ -137,7 +136,7 @@ function submitPoll() {
     {
       headers: {
         "Authorization": `Bearer ${userStore.twitchAccessToken}`,
-        "Client-Id": twitchClientStore.clientId,
+        "Client-Id": config.twitchClientId,
         "Content-Type": "application/json"
       }
     }
@@ -262,10 +261,10 @@ function handleSessionReconnect(data: any) {
 
   wsClient = new EventSubWsClient(
     reconnectUrl,
-    twitchClientStore.apiBaseUrl,
+    config.twitchApiBaseUri,
     userStore.userId,
     userStore.twitchAccessToken,
-    twitchClientStore.clientId,
+    config.twitchClientId,
     onOpen,
     onMessage,
     onClose,
@@ -289,11 +288,11 @@ function handleSessionWelcome(data: any) {
 }
 
 let wsClient = new EventSubWsClient(
-    twitchClientStore.webSocketUrl,
-    twitchClientStore.apiBaseUrl,
+    config.twitchWebSocketUrl,
+    config.twitchApiBaseUri,
     userStore.userId,
     userStore.twitchAccessToken,
-    twitchClientStore.clientId,
+    config.twitchClientId,
     onOpen,
     onMessage,
     onClose,

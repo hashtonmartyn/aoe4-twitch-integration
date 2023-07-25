@@ -12,10 +12,9 @@
 import {ref} from "vue";
 import axios from "axios";
 import {useUserStore} from "@/stores/user";
-import {useTwitchClientStore} from "@/stores/twitchClient";
+import config from "../config";
 
 const userStore = useUserStore()
-const twitchClientStore = useTwitchClientStore()
 
 const userId = ref("")
 const clientId = ref("")
@@ -29,10 +28,11 @@ axios.get("http://localhost:8080/units/users")
 
     return axios.get("http://localhost:8080/units/clients")
   }).then(result => {
+    config.twitchClientId = result.data.data[0].ID
+
+
     clientId.value = result.data.data[0].ID
     clientSecret.value = result.data.data[0].Secret
-
-    twitchClientStore.setClientId(clientId.value)
 
     return axios.post(
   `http://localhost:8080/auth/authorize?client_id=${clientId.value}&client_secret=${clientSecret.value}&grant_type=user_token&user_id=${userId.value}&scope=channel:manage:polls`

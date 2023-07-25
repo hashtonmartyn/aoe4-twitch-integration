@@ -11,6 +11,8 @@ import "primevue/resources/themes/bootstrap4-dark-blue/theme.css";
 import "primeflex/primeflex.css"
 import 'primeicons/primeicons.css';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import config from "./config";
+
 
 
 const app = createApp(App)
@@ -22,6 +24,6 @@ app.use(pinia)
 app.use(router)
 app.use(PrimeVue)
 
-axios.defaults.baseURL = 'http://localhost:8000/';  // the FastAPI backend
+axios.defaults.baseURL = config.backendApiBaseUri;  // the FastAPI backend
 
 app.mount('#app')
