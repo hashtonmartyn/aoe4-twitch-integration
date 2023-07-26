@@ -3,7 +3,7 @@ import {defineStore} from "pinia";
 export const useUserStore = defineStore("user", {
   state: () => ({
     twitchAccessToken: "",
-    userId: ""
+    broadcasterId: ""
   }),
   getters: {
     isAuthenticated: (state) => state.twitchAccessToken != ""
@@ -12,8 +12,8 @@ export const useUserStore = defineStore("user", {
     setToken(token: string) {
       this.twitchAccessToken = token
     },
-    setUserId(userId: string) {
-      this.userId = userId
+    setBroadcasterId(broadcasterId: string) {
+      this.broadcasterId = broadcasterId
     }
   },
   persist: true

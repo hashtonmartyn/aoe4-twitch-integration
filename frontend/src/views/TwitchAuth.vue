@@ -36,7 +36,9 @@ if (route.query.error != null) {
 
 axios.get("/twitch_access_token", {withCredentials: true}).then(result => {
   const token = result.data.access_token
+  const broadcasterId = result.data.broadcaster_id
   userStore.setToken(token)
+  userStore.setBroadcasterId(broadcasterId)
   console.log(result)
 })
 

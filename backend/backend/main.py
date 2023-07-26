@@ -22,6 +22,8 @@ def get_twitch_client_secret() -> str:
 TWITCH_CLIENT_ID = "j14afo5k3gvebt6sytw7p7t5o8syyg"
 TWITCH_CLIENT_SECRET = get_twitch_client_secret()
 
+httpx_transport = None  # Should only be used for testing, no other reason to set this
+
 
 class CsrfSettings(BaseModel):
     secret_key: str = "asecrettoeverybody"
@@ -93,27 +95,7 @@ async def auth_via_twitch(request: Request):
 
     access_token = token["access_token"]
 
-    request.session["twitch_access_token"] = access_token
-
-    return RedirectResponse("http://localhost:5173/TwitchAuth")
-
-
-@app.get("/twitch_access_token")
-async def twitch_access_token(request: Request):
-    access_token = request.session.get("twitch_access_token")
-    if not access_token:
-        raise HTTPException(status_code=404, detail="No twitch access token found in the user's session")
-
-    return JSONResponse(content={"access_token": access_token})
-
-
-@app.post("/poll_result")
-async def poll_result(request: Request, poll: Poll):
-    access_token = request.session.get("twitch_access_token")
-    if not access_token:
-        raise HTTPException(status_code=404, detail="No twitch access token found in the user's session")
-
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(transport=httpx_transport) as client:
         twitch_user_response = await client.get(
             "https://api.twitch.tv/helix/users",
             headers={
@@ -124,12 +106,45 @@ async def poll_result(request: Request, poll: Poll):
     twitch_user_response.raise_for_status()
     twitch_user_response_data = twitch_user_response.json()
 
-    user_id = twitch_user_response_data["data"][0]["display_name"]
+    display_name = twitch_user_response_data["data"][0]["display_name"]
+    broadcaster_id = twitch_user_response_data["data"][0]["id"]
 
-    await redis.set(user_id, poll.result)
+    request.session["twitch_access_token"] = access_token
+    request.session["display_name"] = display_name
+    request.session["broadcaster_id"] = broadcaster_id
+
+    return RedirectResponse("http://localhost:5173/TwitchAuth")
+
+
+@app.get("/twitch_session_data")
+async def twitch_session_data(request: Request):
+    access_token = request.session.get("twitch_access_token")
+    broadcaster_id = request.session.get("broadcaster_id")
+    if not access_token or not broadcaster_id:
+        raise HTTPException(status_code=404, detail="Missing data from the user's session")
+
+    return JSONResponse(
+        content={
+            "access_token": access_token,
+            "broadcaster_id": broadcaster_id
+        }
+    )
+
+
+@app.post("/poll_result")
+async def poll_result(request: Request, poll: Poll):
+    broadcaster_id = request.session.get("broadcaster_id")
+    if not broadcaster_id:
+        raise HTTPException(status_code=404, detail="Missing data from the user's session")
+
+    await redis.set(broadcaster_id, poll.result)
 
 
 @app.get("/poll_result/{display_name}")
 async def poll_result(display_name: str):
-    return await redis.get(display_name)
+    result = await redis.get(display_name)
 
+    if not result:
+        raise HTTPException(status_code=404, detail="No poll result found")
+
+    return result

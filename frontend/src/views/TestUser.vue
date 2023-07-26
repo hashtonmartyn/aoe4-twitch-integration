@@ -1,5 +1,5 @@
 <template>
-  user id: {{userId}}
+  broadcaster id: {{broadcasterId}}
   <br/>
   client id: {{clientId}}
   <br/>
@@ -16,15 +16,15 @@ import config from "../config";
 
 const userStore = useUserStore()
 
-const userId = ref("")
+const broadcasterId = ref("")
 const clientId = ref("")
 const clientSecret = ref("")
 const accessToken = ref("")
 
 axios.get("http://localhost:8080/units/users")
   .then(result => {
-    userId.value = result.data.data[0].id
-    userStore.setUserId(userId.value)
+    broadcasterId.value = result.data.data[0].id
+    userStore.setBroadcasterId(broadcasterId.value)
 
     return axios.get("http://localhost:8080/units/clients")
   }).then(result => {
@@ -35,7 +35,7 @@ axios.get("http://localhost:8080/units/users")
     clientSecret.value = result.data.data[0].Secret
 
     return axios.post(
-  `http://localhost:8080/auth/authorize?client_id=${clientId.value}&client_secret=${clientSecret.value}&grant_type=user_token&user_id=${userId.value}&scope=channel:manage:polls`
+  `http://localhost:8080/auth/authorize?client_id=${clientId.value}&client_secret=${clientSecret.value}&grant_type=user_token&user_id=${broadcasterId.value}&scope=channel:manage:polls`
     )
   }).then(result => {
     accessToken.value = result.data.access_token

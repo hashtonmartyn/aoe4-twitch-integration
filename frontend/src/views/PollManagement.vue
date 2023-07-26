@@ -61,7 +61,7 @@ const userStore = useUserStore()
 const router = useRouter()
 
 if (!userStore.isAuthenticated) {
-  router.push("/Login")
+  router.push("/ConnectWithTwitch")
 }
 
 const pollOptions = [
@@ -124,7 +124,7 @@ function submitPoll() {
   axios.post(
     `http://localhost:8080/mock/polls`,
     {
-      broadcaster_id: userStore.userId,
+      broadcaster_id: userStore.broadcasterId,
       title: "What chaos shall we cause?",
       choices: Object.values(players.value).filter(player => player.id <= numberOfPlayers.value).map(player => {
         return {title: player.option}
@@ -262,7 +262,7 @@ function handleSessionReconnect(data: any) {
   wsClient = new EventSubWsClient(
     reconnectUrl,
     config.twitchApiBaseUri,
-    userStore.userId,
+    userStore.broadcasterId,
     userStore.twitchAccessToken,
     config.twitchClientId,
     onOpen,
@@ -290,7 +290,7 @@ function handleSessionWelcome(data: any) {
 let wsClient = new EventSubWsClient(
     config.twitchWebSocketUrl,
     config.twitchApiBaseUri,
-    userStore.userId,
+    userStore.broadcasterId,
     userStore.twitchAccessToken,
     config.twitchClientId,
     onOpen,

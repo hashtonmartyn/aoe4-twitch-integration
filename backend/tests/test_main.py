@@ -2,10 +2,12 @@ from asyncio import Future
 import unittest
 from unittest.mock import MagicMock
 
+import httpx
 from authlib.integrations.base_client import OAuthError
+from httpx import Request
 from starlette.responses import RedirectResponse
 from starlette.testclient import TestClient
-
+from backend.backend import main
 from backend.backend.main import app, oauth
 
 
@@ -28,11 +30,29 @@ class TestAuthentication(unittest.TestCase):
         twitch_mock.authorize_redirect = self.authorize_redirect_mock
         twitch_mock.authorize_access_token = self.authorize_access_token_mock
 
+        self.redis_mock = MagicMock()
+        main.redis = self.redis_mock
+
+
     def test_get_twitch_access_token_returns_404_when_not_authenticated(self):
-        resp = self.client.get("/twitch_access_token")
+        resp = self.client.get("/twitch_session_data")
         self.assertEqual(404, resp.status_code)
 
     def test_login_via_twitch_success(self):
+        def handler(_: Request):
+            return httpx.Response(
+                200,
+                json={
+                    "data": [{
+                        "access_token": "rfx2uswqe8l4g1mkagrvg5tv0ks3",
+                        "display_name": "Shroud",
+                        "id": "123456789"
+                    }]
+                }
+            )
+
+        main.httpx_transport = httpx.MockTransport(handler)
+
         self.authorize_redirect_future.set_result(
             RedirectResponse(
                 "/auth/twitch",
@@ -57,12 +77,13 @@ class TestAuthentication(unittest.TestCase):
         # Can't test the redirect here because the test client doesn't allow external redirects
         self.client.get("/login/twitch")
 
-        resp = self.client.get("/twitch_access_token")
+        resp = self.client.get("/twitch_session_data")
         self.assertEqual(200, resp.status_code)
 
         actual = resp.json()
         expected = {
-            "access_token": "rfx2uswqe8l4g1mkagrvg5tv0ks3"
+            "access_token": "rfx2uswqe8l4g1mkagrvg5tv0ks3",
+            "broadcaster_id": "123456789"
         }
 
         self.assertEqual(actual, expected)
@@ -82,8 +103,25 @@ class TestAuthentication(unittest.TestCase):
         # Can't test the redirect here because the test client doesn't allow external redirects
         self.client.get("/login/twitch")
 
-        resp = self.client.get("/twitch_access_token")
+        resp = self.client.get("/twitch_session_data")
         self.assertEqual(404, resp.status_code)
+
+    def test_get_poll_result_when_not_set(self):
+        fut = Future()
+        fut.set_result(None)
+        self.redis_mock.get.return_value = fut
+        resp = self.client.get("/poll_result/shroud")
+        self.assertEqual(404, resp.status_code)
+
+    async def test_get_poll_result_when_is_set(self):
+        fut = Future()
+        fut.set_result("Send wolves to SorrowAngel")
+        self.redis_mock.get.return_value = fut
+
+        resp = self.client.get("/poll_result/Shroud")
+
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual("Send wolves to SorrowAngel", resp.text)
 
 
 if __name__ == '__main__':

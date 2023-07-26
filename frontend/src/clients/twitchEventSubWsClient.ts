@@ -10,7 +10,7 @@ enum ConnectionState {
 class EventSubWsClient {
   wsUrl: string
   apiBaseUrl: string
-  userId: string
+  broadcasterId: string
   accessToken: string
   clientId: string
 
@@ -22,7 +22,7 @@ class EventSubWsClient {
   constructor(
       wsUrl: string,
       apiBaseUrl: string,
-      userId: string,
+      broadcasterId: string,
       accessToken: string,
       clientId: string,
       onOpen: (event: Event) => void,
@@ -32,7 +32,7 @@ class EventSubWsClient {
   ) {
     this.wsUrl = wsUrl
     this.apiBaseUrl = apiBaseUrl
-    this.userId = userId
+    this.broadcasterId = broadcasterId
     this.accessToken = accessToken
     this.clientId = clientId
 
@@ -64,7 +64,7 @@ class EventSubWsClient {
         type: eventType,
         version: "1",
         condition: {
-          broadcaster_user_id: this.userId
+          broadcaster_user_id: this.broadcasterId
         },
         transport: {
           method: "websocket",
