@@ -2,3 +2,5 @@
 **/node_modules
 backend/twitch_client_secret
 **/*/.pyc
+/ExperimentalSomethingSomething/cache/
+/ExperimentalSomethingSomething/archives/

@@ -1,0 +1,173 @@
+-----------------------------------------------------------------------
+-- Imported Scripts
+-----------------------------------------------------------------------
+
+-- Import Utility Scripts
+import("cardinal.scar")							-- Contains sfx references, UI templates, and Civ/Age helper functions
+import("ScarUtil.scar")							-- Contains game helper functions
+
+-- Import Gameplay Systems
+import("gameplay/score.scar")					-- Tracks player score
+import("gameplay/diplomacy.scar")				-- Manages Tribute
+
+-- Import Win Conditions
+import("winconditions/annihilation.scar")		-- Support for eliminating a player when they can no longer fight or produce units
+import("winconditions/elimination.scar")		-- Support for player quitting or dropping (through pause menu or disconnection)
+import("winconditions/surrender.scar")			-- Support for player surrender (through pause menu)
+
+-- Import UI Support
+import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
+import("gameplay/event_cues.scar")
+import("gameplay/currentageui.scar")
+
+-----------------------------------------------------------------------
+-- Data
+-----------------------------------------------------------------------
+
+-- Global data table that can be referenced in script functions (e.g. _mod.module = "Mod")
+_mod = {
+	module = "Mod"
+}
+
+-- Register the win condition (Some functions can be prepended with "Mod_" to be called automatically as part of the scripting framework)
+Core_RegisterModule(_mod.module)
+
+-----------------------------------------------------------------------
+-- Scripting framework 
+-----------------------------------------------------------------------
+
+-- Called during load as part of the game setup sequence
+function Mod_OnGameSetup()
+	
+	
+	
+end
+
+-- Called before initialization, preceding other module OnInit functions
+function Mod_PreInit()
+
+end
+
+-- Called on match initialization before handing control to the player
+function Mod_OnInit()
+	
+	
+	
+end
+
+-- Called after initialization is done when game is fading up from black
+function Mod_Start()
+	FOW_RevealAll()
+	Network_RegisterEvent("Mod_InterpretCommand")
+	
+	local localPlayer = Game_GetLocalPlayer()
+	local playerSlotIndex = Player_GetSlotIndex(localPlayer)
+	
+	if playerSlotIndex == 1 then
+		Rule_AddInterval(Mod_PublishPollResult, 1)	-- TODO: change this back to 1s
+	end
+end
+
+
+function Mod_PublishPollResult()
+	-- TODO: Check out Misc_WriteFile for command de-duplication
+	local filePath = "C:/aoe4ti/poll_result.scar"
+	local func = assert(loadfile(filePath))
+	local command = func()
+	
+	Network_CallEvent("Mod_InterpretCommand", command)
+end
+
+
+function Mod_GetPlayerByName(playerName)
+	for _, player in pairs(PLAYERS) do
+		local temp = player.playerName.LocString
+		if player.playerName.LocString == playerName then
+			return player
+		end
+	end
+	return nil
+end
+
+
+function Mod_InterpretCommand(sender_player_id, command)
+	local splitCommand = {}
+	for part in string.gmatch(command, '([^,]+)') do
+		splitCommand[#splitCommand + 1] = part
+	end
+	
+	local action = splitCommand[1]
+	local playerName = splitCommand[2]
+	local player = Mod_GetPlayerByName(playerName)
+	
+	if player == nil then
+		print("Couldn't find player with name", playerName)
+		return
+	end
+	
+	if action == "send 1000g" then
+		Player_AddResource(player.id, 3, 1000)
+		Mod_SendEventNotificationToPlayers("Sent 1000g to", playerName)
+	elseif action == "send wolves" then
+		Mod_HandleSpawnWolves(player)
+		Mod_SendEventNotificationToPlayers("Sent wolves to", playerName)
+	elseif action == "send sheep" then
+		Mod_HandleSpawnSheep(player)
+		Mod_SendEventNotificationToPlayers("Sent sheep to", playerName)
+	elseif action == "send photon man" then
+		
+	end
+end
+
+function Mod_SendEventNotificationToPlayers(action, playerName)
+	local colour = {
+		r = 255,
+		g = 255,
+		b = 255,
+		a = 255
+	}
+	
+	UI_CreateEventCueClickable(
+		-1, 
+		10.0,
+		0, 
+		20.0, 
+		LOC(action .. " " .. playerName), 
+		Loc_Empty(), 
+		"high_priority", 
+		"", 
+		"sfx_ui_event_queue_high_priority_play", 
+		colour.r, 
+		colour.g, 
+		colour.b, 
+		colour.a, 
+		ECV_Queue, 
+		nothing
+	)
+end
+
+
+function Mod_HandleSpawnSheep(player)
+	Mod_HandleSpawnUnitsOnPlayersUnits(player, "gaia_herdable_sheep")
+end
+
+
+function Mod_HandleSpawnWolves(player)
+	Mod_HandleSpawnUnitsOnPlayersUnits(player, "gaia_huntable_wolf")
+end
+
+
+function Mod_HandleSpawnUnitsOnPlayersUnits(player, blueprint)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	
+	for i=1,EGroup_Count(player_entgroupobs),1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+		
+		
+		local sbp_wolves = BP_GetSquadBlueprint(blueprint)
+
+		local spawn_position = Entity_GetPosition(entity)
+		local sg_wolves = SGroup_CreateIfNotFound("wolves")
+		UnitEntry_DeploySquads(player.id, sg_wolves, {{sbp = sbp_wolves, numSquads = 1 }}, spawn_position)
+	end
+end
