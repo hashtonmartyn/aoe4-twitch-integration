@@ -1,9 +1,9 @@
 # Done
 * spawn wolves
 * spawn sheep
+* Spawn a photon man
 
 # Easy
-* Spawn a photon man
 * spawning military units
   * hand-cannons and so on
   * cannons
@@ -11,6 +11,7 @@
 
 # Not too hard
 * Spawn a squad that attacks the player with the highest score
+* Convert one player's units and give them to another player
 * 
 
 # Hard

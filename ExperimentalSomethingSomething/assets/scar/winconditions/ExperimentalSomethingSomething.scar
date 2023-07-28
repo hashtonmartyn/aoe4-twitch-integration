@@ -115,9 +115,65 @@ function Mod_InterpretCommand(sender_player_id, command)
 		Mod_HandleSpawnSheep(player)
 		Mod_SendEventNotificationToPlayers("Sent sheep to", playerName)
 	elseif action == "send photon man" then
-		
+		Mod_HandleSpawnPhotonMan(player)
+		Mod_SendEventNotificationToPlayers("Sent photon man to", playerName)
 	end
 end
+
+
+function Mod_HandleSpawnPhotonMan(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_photon_man", 1)
+end
+
+
+function Mod_HandleSpawnSheep(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_herdable_sheep")
+end
+
+
+function Mod_HandleSpawnWolves(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf")
+end
+
+
+function Mod_HandleSpawnUnitsOnPlayersTc(player, blueprint, numUnits)
+	Mod_HandleSpawnUnitsOnPlayersEntities(
+		player,
+		blueprint,
+		"town_center",
+		numUnits
+	)
+end
+
+function Mod_HandleSpawnUnitsOnPlayersVillagers(player, blueprint, numUnits)
+	Mod_HandleSpawnUnitsOnPlayersEntities(
+		player,
+		blueprint,
+		"worker",
+		numUnits
+	)
+end
+
+
+function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpawnOn, numUnits)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	
+	for i=1,EGroup_Count(player_entgroupobs),1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+		
+		local sbp = BP_GetSquadBlueprint(blueprint)
+
+		local spawn_position = Entity_GetPosition(entity)
+		local sg = SGroup_CreateIfNotFound("some_sg")
+		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = 1 }}, spawn_position)
+		
+		if numUnits ~= nil and i >= numUnits then
+			return
+		end
+	end
+end
+
 
 function Mod_SendEventNotificationToPlayers(action, playerName)
 	local colour = {
@@ -144,30 +200,4 @@ function Mod_SendEventNotificationToPlayers(action, playerName)
 		ECV_Queue, 
 		nothing
 	)
-end
-
-
-function Mod_HandleSpawnSheep(player)
-	Mod_HandleSpawnUnitsOnPlayersUnits(player, "gaia_herdable_sheep")
-end
-
-
-function Mod_HandleSpawnWolves(player)
-	Mod_HandleSpawnUnitsOnPlayersUnits(player, "gaia_huntable_wolf")
-end
-
-
-function Mod_HandleSpawnUnitsOnPlayersUnits(player, blueprint)
-	local player_entgroupobs = Player_GetAllEntities(player.id)
-	
-	for i=1,EGroup_Count(player_entgroupobs),1 do
-		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
-		
-		
-		local sbp_wolves = BP_GetSquadBlueprint(blueprint)
-
-		local spawn_position = Entity_GetPosition(entity)
-		local sg_wolves = SGroup_CreateIfNotFound("wolves")
-		UnitEntry_DeploySquads(player.id, sg_wolves, {{sbp = sbp_wolves, numSquads = 1 }}, spawn_position)
-	end
 end
