@@ -117,7 +117,15 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "send photon man" then
 		Mod_HandleSpawnPhotonMan(player)
 		Mod_SendEventNotificationToPlayers("Sent photon man to", playerName)
+	elseif action == "send great bombards" then
+		Mod_HandleSpawnGreatBombards(player)
+		Mod_SendEventNotificationToPlayers("Sent great bombards to", playerName)
 	end
+end
+
+
+function Mod_HandleSpawnGreatBombards(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_bombard_4_ott", 10)
 end
 
 

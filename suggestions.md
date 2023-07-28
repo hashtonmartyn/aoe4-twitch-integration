@@ -1,12 +1,14 @@
 # Done
-* spawn wolves
-* spawn sheep
-* Spawn a photon man
+* spawn:
+  * wolves
+  * sheep
+  * a photon man
+  * great bombards
 
 # Easy
-* spawning military units
+* spawn best/coolest units of each civ?
   * hand-cannons and so on
-  * cannons
+  
 
 
 # Not too hard
