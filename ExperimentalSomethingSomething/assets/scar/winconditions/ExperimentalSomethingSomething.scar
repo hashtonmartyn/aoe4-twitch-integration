@@ -90,6 +90,22 @@ function Mod_GetPlayerByName(playerName)
 end
 
 
+function Mod_GetLowestScoreAlivePlayer(excludePlayerId)
+	local lowestScorePlayer
+	for _, player in pairs(PLAYERS) do
+		if player.id ~= excludePlayerId and not Core_IsPlayerEliminated(player.id) then
+			if lowestScorePlayer == nil then
+				lowestScorePlayer = player
+			elseif player.score < lowestScorePlayer.score then
+				lowestScorePlayer = player
+			end
+		end
+	end
+	
+	return lowestScorePlayer
+end
+
+
 function Mod_InterpretCommand(sender_player_id, command)
 	local splitCommand = {}
 	for part in string.gmatch(command, '([^,]+)') do
@@ -107,25 +123,63 @@ function Mod_InterpretCommand(sender_player_id, command)
 	
 	if action == "send 1000g" then
 		Player_AddResource(player.id, 3, 1000)
-		Mod_SendEventNotificationToPlayers("Sent 1000g to", playerName)
+		Mod_SendEventNotificationToPlayers("Sent 1000g to " .. playerName)
 	elseif action == "send wolves" then
 		Mod_HandleSpawnWolves(player)
-		Mod_SendEventNotificationToPlayers("Sent wolves to", playerName)
+		Mod_SendEventNotificationToPlayers("Sent wolves to " .. playerName)
 	elseif action == "send sheep" then
 		Mod_HandleSpawnSheep(player)
-		Mod_SendEventNotificationToPlayers("Sent sheep to", playerName)
+		Mod_SendEventNotificationToPlayers("Sent sheep to " .. playerName)
 	elseif action == "send photon man" then
 		Mod_HandleSpawnPhotonMan(player)
-		Mod_SendEventNotificationToPlayers("Sent photon man to", playerName)
+		Mod_SendEventNotificationToPlayers("Sent photon man to " .. playerName)
 	elseif action == "send great bombards" then
 		Mod_HandleSpawnGreatBombards(player)
-		Mod_SendEventNotificationToPlayers("Sent great bombards to", playerName)
+		Mod_SendEventNotificationToPlayers("Sent great bombards to" .. playerName)
+	elseif action == "take stuff from and give to lowest score player" then
+		Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
+		Mod_SendEventNotificationToPlayers("Took stuff from " .. playerName .. " and gave it to the next lowest score player")
+	elseif action == "send tower elephants" then
+		Mod_HandleSpawnTowerElephants(player)
+		Mod_SendEventNotificationToPlayers("Sent tower elephants to " .. playerName)
 	end
 end
 
 
+function Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
+	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player.id)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	local numUnits = Mod_CalculateNumUnits(1, 0.5)
+	
+	EGroup_Filter(player_entgroupobs, "landmark", FILTER_REMOVE)
+	EGroup_Filter(player_entgroupobs, "building", FILTER_REMOVE)
+	
+	for i=1,numUnits,1 do
+		local eGroupCount = EGroup_Count(player_entgroupobs)
+		if eGroupCount == 0 then
+			return
+		end
+		
+		local index = World_GetRand(1, eGroupCount)
+		local entity = EGroup_GetEntityAt(player_entgroupobs, index)
+		local squad = Entity_GetSquad(entity)
+		
+		Util_SetPlayerOwner(entity, lowestScorePlayer.id)
+		
+		if squad ~= nil then
+			Util_SetPlayerOwner(squad, lowestScorePlayer.id)
+		end
+	end
+end
+
+
+function Mod_HandleSpawnTowerElephants(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_war_elephant_tower2_4_sul", Mod_CalculateNumUnits(1, 0.25))
+end
+
+
 function Mod_HandleSpawnGreatBombards(player)
-	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_bombard_4_ott", 10)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_bombard_4_ott", Mod_CalculateNumUnits(1, 0.25))
 end
 
 
@@ -135,12 +189,12 @@ end
 
 
 function Mod_HandleSpawnSheep(player)
-	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_herdable_sheep")
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_herdable_sheep", Mod_CalculateNumUnits(1, 1))
 end
 
 
 function Mod_HandleSpawnWolves(player)
-	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf")
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 1))
 end
 
 
@@ -183,7 +237,15 @@ function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpaw
 end
 
 
-function Mod_SendEventNotificationToPlayers(action, playerName)
+function Mod_CalculateNumUnits(intercept, slope)
+	local gameTimeMins = World_GetGameTime() / 60.0
+	local numUnits = math.floor(slope * gameTimeMins + intercept)
+	
+	return numUnits
+end
+
+
+function Mod_SendEventNotificationToPlayers(notificationText)
 	local colour = {
 		r = 255,
 		g = 255,
@@ -196,7 +258,7 @@ function Mod_SendEventNotificationToPlayers(action, playerName)
 		10.0,
 		0, 
 		20.0, 
-		LOC(action .. " " .. playerName), 
+		LOC(notificationText), 
 		Loc_Empty(), 
 		"high_priority", 
 		"", 
