@@ -11,6 +11,7 @@
   * mining camp
 * Convert one player's units and give them to another player
 * Make villagers buff
+* Villagers revolt
 
 # Easy
 * spawn best/coolest units of each civ?
@@ -22,7 +23,6 @@
 # Not too hard
 * Spawn a squad that attacks the player with the highest score
 * find the players highest value unit and spawn enemy archers and horsemen in a circle around it
-* Villagers revolt
 
 # Hard
 * Get good

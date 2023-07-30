@@ -154,6 +154,39 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "buff villagers" then
 		Mod_HandleBuffVillagers(player)
 		Mod_SendEventNotificationToPlayers("Buffing villagers for " .. playerName)
+	elseif action == "villagers wander off" then
+		Mod_HandleVillagersWanderOff(player)
+		Mod_SendEventNotificationToPlayers("Villagers will wander off for " .. playerName)
+	end
+end
+
+
+function Mod_HandleVillagersWanderOff(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+	local maxX = math.floor(World_GetWidth() / 2)
+	local minX = -maxX
+	
+	local maxZ = math.floor(World_GetLength() / 2)
+	local minZ = -maxZ
+	
+	for i=1,eGroupCount,1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+		local squad = Entity_GetSquad(entity)
+		
+		local randX = World_GetRand(minX, maxX)
+		local randZ = World_GetRand(minZ, maxZ)
+		local randY = World_GetHeightAt(randX, randZ)
+		
+		local pos = World_Pos(randX, randY, randZ)
+		
+		local sgroup = SGroup_Create("some_vill")
+		SGroup_Add(sgroup, squad)
+		
+		Cmd_AttackMove(sgroup, pos)
+		
+		SGroup_Destroy("some_vill")
 	end
 end
 
