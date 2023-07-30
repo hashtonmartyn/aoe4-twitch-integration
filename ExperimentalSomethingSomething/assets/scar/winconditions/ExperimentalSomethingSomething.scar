@@ -142,6 +142,33 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "send tower elephants" then
 		Mod_HandleSpawnTowerElephants(player)
 		Mod_SendEventNotificationToPlayers("Sent tower elephants to " .. playerName)
+	elseif action == "delete houses" then
+		Mod_HandleDeleteHouse(player)
+		Mod_SendEventNotificationToPlayers("Deleted some houses from" .. playerName)
+	end
+end
+
+
+function Mod_HandleDeleteHouse(player)
+	local numHouses = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, "house", numHouses)
+end
+
+
+function Mod_HandleDeleteEntities(player, filter, numEntities)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, filter, FILTER_KEEP)
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+	
+	for i=1,numEntities,1 do
+		if i > eGroupCount then
+			return
+		end
+		
+		local index = World_GetRand(1, eGroupCount)
+		local entity = EGroup_GetEntityAt(player_entgroupobs, index)
+		
+		Entity_Kill(entity)
 	end
 end
 
@@ -154,9 +181,10 @@ function Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
 	EGroup_Filter(player_entgroupobs, "landmark", FILTER_REMOVE)
 	EGroup_Filter(player_entgroupobs, "building", FILTER_REMOVE)
 	
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+	
 	for i=1,numUnits,1 do
-		local eGroupCount = EGroup_Count(player_entgroupobs)
-		if eGroupCount == 0 then
+		if i > eGroupCount then
 			return
 		end
 		
