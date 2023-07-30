@@ -143,21 +143,38 @@ function Mod_InterpretCommand(sender_player_id, command)
 		Mod_HandleSpawnTowerElephants(player)
 		Mod_SendEventNotificationToPlayers("Sent tower elephants to " .. playerName)
 	elseif action == "delete houses" then
-		Mod_HandleDeleteHouse(player)
-		Mod_SendEventNotificationToPlayers("Deleted some houses from" .. playerName)
+		Mod_HandleDeleteHouses(player)
+		Mod_SendEventNotificationToPlayers("Deleted some houses from " .. playerName)
+	elseif action == "delete gers" then
+		Mod_HandleDeleteGers(player)
+		Mod_SendEventNotificationToPlayers("Deleted some gers from " .. playerName)
 	end
 end
 
 
-function Mod_HandleDeleteHouse(player)
+function Mod_HandleDeleteGers(player)
 	local numHouses = Mod_CalculateNumUnits(1, 0.1)
-	Mod_HandleDeleteEntities(player, "house", numHouses)
+	Mod_HandleDeleteEntities(player, {"ger"}, numHouses, {})
 end
 
 
-function Mod_HandleDeleteEntities(player, filter, numEntities)
+function Mod_HandleDeleteHouses(player)
+	local numHouses = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, {"house"}, numHouses, {"ger"})
+end
+
+
+function Mod_HandleDeleteEntities(player, keepFilters, numEntities, removeFilters)
 	local player_entgroupobs = Player_GetAllEntities(player.id)
-	EGroup_Filter(player_entgroupobs, filter, FILTER_KEEP)
+	
+	for _, filter in ipairs(keepFilters) do
+		EGroup_Filter(player_entgroupobs, filter, FILTER_KEEP)
+	end
+	
+	for _, filter in ipairs(removeFilters) do
+		EGroup_Filter(player_entgroupobs, filter, FILTER_REMOVE)
+	end
+	
 	local eGroupCount = EGroup_Count(player_entgroupobs)
 	
 	for i=1,numEntities,1 do

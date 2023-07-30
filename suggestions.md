@@ -7,13 +7,13 @@
   * Elephants
 * Delete:
   * houses
+  * gers
 * Convert one player's units and give them to another player
 
 # Easy
 * spawn best/coolest units of each civ?
   * hand-cannons
 * Delete:
-  * gers
   * mills
   * lumber yard
   * mining camp
