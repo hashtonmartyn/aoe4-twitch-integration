@@ -148,7 +148,16 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "delete gers" then
 		Mod_HandleDeleteGers(player)
 		Mod_SendEventNotificationToPlayers("Deleted some gers from " .. playerName)
+	elseif action == "delete mining camps" then
+		Mod_HandleDeleteMiningCamps(player)
+		Mod_SendEventNotificationToPlayers("Deleted some mining camps from " .. playerName)
 	end
+end
+
+
+function Mod_HandleDeleteMiningCamps(player)
+	local numMiningCamps = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, {"mining_camp"}, numMiningCamps, {})
 end
 
 

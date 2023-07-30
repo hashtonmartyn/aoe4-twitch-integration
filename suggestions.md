@@ -8,6 +8,7 @@
 * Delete:
   * houses
   * gers
+  * mining camp
 * Convert one player's units and give them to another player
 
 # Easy
@@ -15,9 +16,7 @@
   * hand-cannons
 * Delete:
   * mills
-  * lumber yard
-  * mining camp
-  
+  * lumber yard  
 
 # Not too hard
 * Spawn a squad that attacks the player with the highest score
