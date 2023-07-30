@@ -151,7 +151,53 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "delete mining camps" then
 		Mod_HandleDeleteMiningCamps(player)
 		Mod_SendEventNotificationToPlayers("Deleted some mining camps from " .. playerName)
+	elseif action == "buff villagers" then
+		Mod_HandleBuffVillagers(player)
+		Mod_SendEventNotificationToPlayers("Buffing villagers for " .. playerName)
 	end
+end
+
+
+function Mod_HandleBuffVillagers(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	
+	Modify_EntityMaxHealth(player_entgroupobs, 75, MUT_Addition)
+	Mod_Modify_WeaponDamage(player_entgroupobs, "hardpoint_01", 6, MUT_Addition)
+end
+
+
+function Mod_Modify_WeaponDamage(groupid, hardpoint, factor, usage)
+	-- create the appropriate modifier
+	local modifier = Modifier_Create(MAT_Weapon, "damage_weapon_modifier", usage, false, factor, hardpoint)
+	local result = {}
+	
+	local _ApplyModifierToSquad = function(gid, idx, sid)
+		if Squad_IsAlive(sid) and Squad_Count(sid) > 0 and Squad_HasWeaponHardpoint(sid, hardpoint) then
+			local modids = Modifier_ApplyToSquad(modifier, sid, 0)
+			table.insert(result, modids)
+			Modifier_AddToSquadTable(sid, modids)
+		end
+	end
+	
+	local _ApplyModifierToEntity = function(gid, idx, eid)
+		if Entity_IsAlive(eid) then
+			local modids = Modifier_ApplyToEntity(modifier, eid, 0)
+			table.insert(result, modids)
+			Modifier_AddToEntityTable(eid, modids)
+		end
+	end
+	
+	if (scartype(groupid) == ST_SGROUP) then
+		-- apply this to each squad in the group
+		SGroup_ForEachEx(groupid, _ApplyModifierToSquad, true, true)
+	elseif (scartype(groupid) == ST_EGROUP) then
+		-- apply this to each entity in the group
+		EGroup_ForEachEx(groupid, _ApplyModifierToEntity, true, true)
+	end
+	
+	return result
+	
 end
 
 
