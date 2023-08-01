@@ -160,6 +160,35 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "burn buildings" then
 		Mod_HandleBurnBuildings(player)
 		Mod_SendEventNotificationToPlayers("Set buildings on fire for " .. playerName)
+	elseif action == "send relics" then
+		Mod_HandleSendRelics(player)
+		Mod_SendEventNotificationToPlayers("Sent relics to " .. playerName)
+	end
+end
+
+
+function Mod_HandleSendRelics(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "town_center", FILTER_KEEP)
+	local numRelics = Mod_CalculateNumUnits(1, 0.2)
+	
+	for i=1,EGroup_Count(player_entgroupobs),1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+		
+		local blueprint = BP_GetEntityBlueprintsWithType("relic")[1]
+		
+		local sg = SGroup_CreateIfNotFound("some_sg")
+		local initialSpawnPosition = Entity_GetPosition(entity)
+		local tempRelic = Entity_Create(blueprint, player.id, initialSpawnPosition, true)
+		local spawnPosition = World_GetSpawnablePosition(Entity_GetPosition(entity), tempRelic)
+		Entity_Destroy(tempRelic)
+		local relic = Entity_Create(blueprint, player.id, spawnPosition, true)
+		
+		Entity_Spawn(relic)
+		
+		if numRelics ~= nil and i >= numRelics then
+			return
+		end
 	end
 end
 
@@ -407,7 +436,7 @@ end
 
 function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpawnOn, numUnits)
 	local player_entgroupobs = Player_GetAllEntities(player.id)
-	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	EGroup_Filter(player_entgroupobs, entityBpToSpawnOn, FILTER_KEEP)
 	
 	for i=1,EGroup_Count(player_entgroupobs),1 do
 		local entity = EGroup_GetEntityAt(player_entgroupobs, i)

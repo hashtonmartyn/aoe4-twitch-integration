@@ -5,6 +5,7 @@
   * a photon man
   * great bombards
   * Elephants
+  * relics
 * Delete:
   * houses
   * gers
@@ -17,7 +18,6 @@
 # Easy
 * spawn best/coolest units of each civ?
   * hand-cannons
-  * relics
   * boar
 * Delete:
   * mills
