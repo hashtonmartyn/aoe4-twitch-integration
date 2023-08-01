@@ -12,10 +12,13 @@
 * Convert one player's units and give them to another player
 * Make villagers buff
 * Villagers revolt
+* Setting buildings on fire
 
 # Easy
 * spawn best/coolest units of each civ?
   * hand-cannons
+  * relics
+  * boar
 * Delete:
   * mills
   * lumber yard  
@@ -26,5 +29,4 @@
 
 # Hard
 * Get good
-* Random air strike/red zone from pubg with bombards
 * Spawn a capturable wonder thing as a win condition

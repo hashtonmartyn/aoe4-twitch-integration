@@ -26,7 +26,8 @@ import("gameplay/currentageui.scar")
 
 -- Global data table that can be referenced in script functions (e.g. _mod.module = "Mod")
 _mod = {
-	module = "Mod"
+	module = "Mod",
+	burnBuildingsMapIconIds = {}
 }
 
 -- Register the win condition (Some functions can be prepended with "Mod_" to be called automatically as part of the scripting framework)
@@ -64,13 +65,12 @@ function Mod_Start()
 	local playerSlotIndex = Player_GetSlotIndex(localPlayer)
 	
 	if playerSlotIndex == 1 then
-		Rule_AddInterval(Mod_PublishPollResult, 1)	-- TODO: change this back to 1s
+		Rule_AddInterval(Mod_PublishPollResult, 10)
 	end
 end
 
 
 function Mod_PublishPollResult()
-	-- TODO: Check out Misc_WriteFile for command de-duplication
 	local filePath = "C:/aoe4ti/poll_result.scar"
 	local func = assert(loadfile(filePath))
 	local command = func()
@@ -157,7 +157,62 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "villagers wander off" then
 		Mod_HandleVillagersWanderOff(player)
 		Mod_SendEventNotificationToPlayers("Villagers will wander off for " .. playerName)
+	elseif action == "burn buildings" then
+		Mod_HandleBurnBuildings(player)
+		Mod_SendEventNotificationToPlayers("Set buildings on fire for " .. playerName)
 	end
+end
+
+
+function Mod_HandleBurnBuildings(player)
+	local building_egroup = Player_GetAllEntities(player.id)
+	EGroup_Filter(building_egroup, "building", FILTER_KEEP)
+	local buildingCount = EGroup_Count(building_egroup)
+	
+	local index = World_GetRand(1, buildingCount)
+	local centralBuilding = EGroup_GetEntityAt(building_egroup, index)
+	local center = Entity_GetPosition(centralBuilding)
+	
+	local numBuildingsToSetOnFire = Mod_CalculateNumUnits(1, 0.25)
+	local tileSize = 4.5	-- TODO: double check this, probably wrong
+	local radius = tileSize * Mod_CalculateNumUnits(1, 1)
+	
+	local mapIconId = MapIcon_CreatePosition(
+		center,
+		"icons\\minimap\\trade_route_enemy",
+		1,
+		255, 
+		255,
+		255,
+		0
+	)
+	
+	for i=1,buildingCount,1 do
+		if i > numBuildingsToSetOnFire then
+			return
+		end
+		
+		local building = EGroup_GetEntityAt(building_egroup, i)
+		local distance = Util_GetDistance(centralBuilding, building)
+		local isBurnable = Entity_IsBurnable(building)
+		
+		if isBurnable and distance < radius then
+			local burnThreshold = Entity_GetOnFireHealthPercentThreshold(building)
+			Entity_SetHealth(building, burnThreshold)
+		end
+	end
+	
+	_mod.burnBuildingsMapIconIds[#_mod.burnBuildingsMapIconIds+1] = mapIconId
+	
+	Rule_AddOneShot(Mod_RemoveMapIcon, 15, removeIconArgs)
+end
+
+
+function Mod_RemoveMapIcon()
+	local iconId = _mod.burnBuildingsMapIconIds[1]
+	table.remove(_mod.burnBuildingsMapIconIds, 1)
+	MapIcon_Destroy(iconId)
+	Rule_RemoveMe()
 end
 
 
