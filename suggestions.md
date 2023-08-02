@@ -6,6 +6,7 @@
   * great bombards
   * Elephants
   * relics
+  * boar
 * Delete:
   * houses
   * gers
@@ -16,17 +17,28 @@
 * Setting buildings on fire
 
 # Easy
+* Send
+  * Food
+  * Wood
+  * Stone
 * spawn best/coolest units of each civ?
-  * hand-cannons
-  * boar
+  * royal culverins
+  * nest of bees
+  * rus monks
+  * janissary
+  * english king
+  * landsknecht
+  * mangudai
+  * camel rider
 * Delete:
   * mills
   * lumber yard  
 
 # Not too hard
-* Spawn a squad that attacks the player with the highest score
-* find the players highest value unit and spawn enemy archers and horsemen in a circle around it
+* kings from campaigns
 
 # Hard
 * Get good
 * Spawn a capturable wonder thing as a win condition
+* Spawn a squad that attacks the player with the highest score
+* find the players highest value unit and spawn enemy archers and horsemen in a circle around it
