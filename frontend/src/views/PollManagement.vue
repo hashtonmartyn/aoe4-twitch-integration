@@ -31,14 +31,13 @@
           </div>
         </template>
       </div>
-
       <span class="p-buttonset flex justify-content-center mt-4">
         <Button label="Randomise Options" icon="pi pi-sync" severity="warning" @click="randomiseOptions" :disabled="!isPollConfigurationValid()" />
         <Button label="Submit Poll" icon="pi pi-check" @click="submitPoll" :disabled="!isPollConfigurationValid()" />
       </span>
     </AccordionTab>
   </Accordion>
-
+  <h1 class="flex justify-content-center flex-wrap">Poll Results</h1>
   <Chart type="bar" :data="chartData" :options="chartOptions" class="mt-8"/>
 </template>
 
@@ -248,7 +247,7 @@ function handleChannelPollMessage(data: any) {
 
   chartData.value.labels = choiceLabels
   chartData.value.datasets[0].data = pollData
-  chartData.value.datasets[0].label = pollTitle
+  // chartData.value.datasets[0].label = pollTitle
 }
 
 function handleRevocation(data: any) {
@@ -315,9 +314,26 @@ const chartData = ref({
   ]
 });
 const chartOptions = ref({
+  plugins: {
+    legend: {
+      display: false
+    },
+    title: {
+      display: false,
+      text: "What chaos shall we cause?"
+    }
+  },
   scales: {
+    x: {
+      grid: {
+        display: false
+      }
+    },
     y: {
-      beginAtZero: true
+      beginAtZero: true,
+      grid: {
+        display: false
+      }
     }
   }
 });

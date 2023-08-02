@@ -12,7 +12,7 @@ import "primeflex/primeflex.css"
 import 'primeicons/primeicons.css';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import config from "./config";
-
+import Chart from 'chart.js/auto'
 
 
 const app = createApp(App)
@@ -23,6 +23,9 @@ pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(router)
 app.use(PrimeVue)
+
+Chart.defaults.color = "#FFF"
+Chart.defaults.borderColor = "#FFF"
 
 axios.defaults.baseURL = config.backendApiBaseUri;  // the FastAPI backend
 
