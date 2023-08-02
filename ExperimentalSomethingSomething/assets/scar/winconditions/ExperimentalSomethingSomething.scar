@@ -163,7 +163,15 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "send relics" then
 		Mod_HandleSendRelics(player)
 		Mod_SendEventNotificationToPlayers("Sent relics to " .. playerName)
+	elseif action == "send boar then" then
+		Mod_HandleSendBoar(player)
+		Mod_SendEventNotificationToPlayers("Sent boars to " .. playerName)
 	end
+end
+
+
+function Mod_HandleSendBoar(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_boar", Mod_CalculateNumUnits(1, 0.2))
 end
 
 
