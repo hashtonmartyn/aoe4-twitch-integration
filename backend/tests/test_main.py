@@ -1,5 +1,6 @@
 from asyncio import Future
 import unittest
+from json import dumps
 from unittest.mock import MagicMock
 
 import httpx
@@ -113,15 +114,26 @@ class TestAuthentication(unittest.TestCase):
         resp = self.client.get("/poll_result/shroud")
         self.assertEqual(404, resp.status_code)
 
-    async def test_get_poll_result_when_is_set(self):
+    def test_get_poll_result_when_is_set(self):
         fut = Future()
-        fut.set_result("Send wolves to SorrowAngel")
+        fut.set_result(
+            dumps({
+                "result": "Send wolves to SorrowAngel",
+                "event_id": "some_event_id_1234"
+            })
+        )
         self.redis_mock.get.return_value = fut
 
         resp = self.client.get("/poll_result/Shroud")
 
         self.assertEqual(200, resp.status_code)
-        self.assertEqual("Send wolves to SorrowAngel", resp.text)
+        self.assertEqual(
+            {
+                "result": "Send wolves to SorrowAngel",
+                "event_id": "some_event_id_1234"
+            },
+            resp.json()
+        )
 
 
 if __name__ == '__main__':

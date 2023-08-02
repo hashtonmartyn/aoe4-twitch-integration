@@ -1,8 +1,12 @@
+import dataclasses
+from json import loads
+
 from redis import asyncio as aioredis
 import httpx
 from authlib.integrations.base_client import OAuthError
 from authlib.integrations.starlette_client import OAuth
 from fastapi import FastAPI, HTTPException
+from redis.commands.json.path import Path
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
@@ -66,6 +70,7 @@ redis = aioredis.from_url("redis://localhost")
 
 class Poll(BaseModel):
     result: str
+    event_id: str
 
 
 @app.get("/login/twitch")
@@ -133,18 +138,21 @@ async def twitch_session_data(request: Request):
 
 @app.post("/poll_result")
 async def poll_result(request: Request, poll: Poll):
-    broadcaster_id = request.session.get("broadcaster_id")
+    broadcaster_id = request.session.get("display_name")
     if not broadcaster_id:
         raise HTTPException(status_code=404, detail="Missing data from the user's session")
 
-    await redis.set(broadcaster_id, poll.result)
+    data = poll.json()
+    await redis.set(broadcaster_id, data)
 
 
 @app.get("/poll_result/{display_name}")
 async def poll_result(display_name: str):
-    result = await redis.get(display_name)
+    raw_result = await redis.get(display_name)
 
-    if not result:
+    if not raw_result:
         raise HTTPException(status_code=404, detail="No poll result found")
+
+    result = loads(raw_result)
 
     return result

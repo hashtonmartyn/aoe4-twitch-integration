@@ -210,17 +210,20 @@ function handleNotification(data: any) {
   }
 
   if (data.payload.subscription.type == "channel.poll.end") {
-    handleChannelPollEnd()
+    handleChannelPollEnd(lastPollEventId)
   }
 }
 
-function handleChannelPollEnd() {
+function handleChannelPollEnd(eventId: string) {
   resultSubmissionMessage.value.content = ""
   resultSubmissionMessage.value.severity = ""
 
   axios.post(
       "/poll_result",
-      {result: winningChoice.value},
+      {
+        result: winningChoice.value,
+        event_id: eventId
+      },
       {withCredentials: true}
   ).then(result => {
     if (result.status != 200) {
