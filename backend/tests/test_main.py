@@ -34,7 +34,6 @@ class TestAuthentication(unittest.TestCase):
         self.redis_mock = MagicMock()
         main.redis = self.redis_mock
 
-
     def test_get_twitch_access_token_returns_404_when_not_authenticated(self):
         resp = self.client.get("/twitch_session_data")
         self.assertEqual(404, resp.status_code)
