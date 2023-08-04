@@ -34,7 +34,7 @@ if (route.query.error != null) {
   showErrorMessage.value = true
 }
 
-axios.get("/twitch_access_token", {withCredentials: true}).then(result => {
+axios.get("/twitch_session_data", {withCredentials: true}).then(result => {
   const token = result.data.access_token
   const broadcasterId = result.data.broadcaster_id
   userStore.setToken(token)
