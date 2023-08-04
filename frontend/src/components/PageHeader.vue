@@ -1,5 +1,5 @@
 <template>
-  <Menubar :model="items">
+  <Menubar :model="visibleItems">
     <template #end>
       <img alt="logo" src="/logo-favicon.svg" height="40" class="mr-2"/>
     </template>
@@ -8,13 +8,24 @@
 
 <script setup lang="ts">
 import Menubar from "primevue/menubar";
-import { ref } from "vue";
+import {computed, ref} from "vue";
+import {useUserStore} from "@/stores/user";
+import {useRouter} from "vue-router";
 
-const items = ref([
-  { label: 'Home', to: '/' },
-  { label: 'About', to: '/About'},
-  { label: 'Connect With Twitch', to: 'ConnectWithTwitch'},
-  { label: 'Poll Management', to: '/PollManagement'}
+const userStore = useUserStore()
+const router = useRouter()
+
+const allItems = ref([
+  { label: 'Home', to: '/', visible: true },
+  { label: 'About', to: '/About', visible: true },
+  { label: 'Connect With Twitch', to: 'ConnectWithTwitch', visible: !userStore.isAuthenticated },
+  { label: 'Poll Management', to: '/PollManagement', visible: true}
 ]);
+
+router.afterEach(() => {
+  allItems.value.filter(item => item.to == "ConnectWithTwitch")[0].visible = !userStore.isAuthenticated
+})
+
+const visibleItems = computed(() => allItems.value.filter(item => item.visible))
 
 </script>
