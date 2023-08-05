@@ -69,7 +69,7 @@ function Mod_Start()
 	FOW_RevealAll()
 	Network_RegisterEvent("Mod_InterpretCommand")
 
-	if UI_IsReplay() then
+	if not UI_IsReplay() then
 		local isPlayerHost = Mod_IsPlayerHost(Game_GetLocalPlayer())
 		if isPlayerHost then
 			Rule_AddInterval(Mod_PublishPollResult, 10)
@@ -137,10 +137,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 		return
 	end
 	
-	if action == "send 1000g" then
-		Player_AddResource(player.id, 3, 1000)
-		Mod_SendEventNotificationToPlayers("Sent 1000g to " .. playerName)
-	elseif action == "send wolves" then
+	if action == "send wolves" then
 		Mod_HandleSpawnWolves(player)
 		Mod_SendEventNotificationToPlayers("Sent wolves to " .. playerName)
 	elseif action == "send sheep" then
@@ -179,10 +176,48 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "send relics" then
 		Mod_HandleSendRelics(player)
 		Mod_SendEventNotificationToPlayers("Sent relics to " .. playerName)
-	elseif action == "send boar then" then
+	elseif action == "send boar" then
 		Mod_HandleSendBoar(player)
 		Mod_SendEventNotificationToPlayers("Sent boars to " .. playerName)
+	elseif action == "send gold" then
+		Mod_HandleSendGold(player)
+		Mod_SendEventNotificationToPlayers("Sent gold to " .. playerName)
+	elseif action == "send food" then
+		Mod_HandleSendFood(player)
+		Mod_SendEventNotificationToPlayers("Sent food to " .. playerName)
+	elseif action == "send wood" then
+		Mod_HandleSendWood(player)
+		Mod_SendEventNotificationToPlayers("Sent wood to " .. playerName)
+	elseif action == "send stone" then
+		Mod_HandleSendStone(player)
+		Mod_SendEventNotificationToPlayers("Sent stone to " .. playerName)
 	end
+end
+
+
+function Mod_HandleSendStone(player)
+	Mod_HandleSendResource(player, RT_Stone)
+end
+
+
+function Mod_HandleSendWood(player)
+	Mod_HandleSendResource(player, RT_Wood)
+end
+
+
+function Mod_HandleSendFood(player)
+	Mod_HandleSendResource(player, RT_Food)
+end
+
+
+function Mod_HandleSendGold(player)
+	Mod_HandleSendResource(player, RT_Gold)
+end
+
+
+function Mod_HandleSendResource(player, resourceType)
+	local amount = Mod_CalculateNumUnits(100, 2, 2)
+	Player_AddResource(player.id, resourceType, amount)
 end
 
 
@@ -478,9 +513,12 @@ function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpaw
 end
 
 
-function Mod_CalculateNumUnits(intercept, slope)
+function Mod_CalculateNumUnits(intercept, slope, exponent)
+	if exponent == nil then
+		exponent = 1
+	end
 	local gameTimeMins = World_GetGameTime() / 60.0
-	local numUnits = math.floor(slope * gameTimeMins + intercept)
+	local numUnits = math.floor(slope * gameTimeMins ^ exponent + intercept)
 	
 	return numUnits
 end
