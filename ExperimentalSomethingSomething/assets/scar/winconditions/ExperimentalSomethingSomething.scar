@@ -191,7 +191,15 @@ function Mod_InterpretCommand(sender_player_id, command)
 	elseif action == "send stone" then
 		Mod_HandleSendStone(player)
 		Mod_SendEventNotificationToPlayers("Sent stone to " .. playerName)
+	elseif action == "send nest of bees" then
+		Mod_HandleSendNestOfBees(player)
+		Mod_SendEventNotificationToPlayers("Sent nest of bees to " .. playerName)
 	end
+end
+
+
+function Mod_HandleSendNestOfBees(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_nest_of_bees_4_clocktower_chi", Mod_CalculateNumUnits(1, 0.25))
 end
 
 

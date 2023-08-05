@@ -1,4 +1,9 @@
 # Done
+* Send
+  * Food
+  * Wood
+  * Stone
+  * Gold
 * spawn:
   * wolves
   * sheep
@@ -7,6 +12,7 @@
   * Elephants
   * relics
   * boar
+  * nest of bees
 * Delete:
   * houses
   * gers
@@ -17,13 +23,8 @@
 * Setting buildings on fire
 
 # Easy
-* Send
-  * Food
-  * Wood
-  * Stone
 * spawn best/coolest units of each civ?
   * royal culverins
-  * nest of bees
   * rus monks
   * janissary
   * english king

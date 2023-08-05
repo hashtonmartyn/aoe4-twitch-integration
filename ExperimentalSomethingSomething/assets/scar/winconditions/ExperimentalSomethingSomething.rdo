@@ -58,6 +58,7 @@
 					<DataValue Name="EntityPrecacheItem">6897353403012520972</DataValue>
 					<DataValue Name="EntityPrecacheItem">10855368926248558189</DataValue>
 					<DataValue Name="EntityPrecacheItem">15596454033014388054</DataValue>
+					<DataValue Name="EntityPrecacheItem">11506254699279172635</DataValue>
 					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
 					<DataObject Name="" Type="EntityPrecacheItem" Id="5688470615943712965" OwnerId="5562827771909658441">
 						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
@@ -91,6 +92,18 @@
 							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="747908319812217120" OwnerId="10855368926248558189">
 								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
 								<DataProperty Name="m_fileName" Type="String" Value="unit_war_elephant_tower2_4_sul"/>
+							</DataObject>
+						</DataProperty>
+					</DataObject>
+					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
+					<DataObject Name="" Type="EntityPrecacheItem" Id="11506254699279172635" OwnerId="5562827771909658441">
+						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
+						<DataProperty Name="m_blueprint" Type="Object">
+							<DataValue Name="ReflectPBG_EntityProperties">12815539746845660839</DataValue>
+							<!--WinCondition/PrecacheList/EntityPrecacheItem/ReflectPBG_EntityProperties/-->
+							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="12815539746845660839" OwnerId="11506254699279172635">
+								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
+								<DataProperty Name="m_fileName" Type="String" Value="unit_nest_of_bees_4_clocktower_chi"/>
 							</DataObject>
 						</DataProperty>
 					</DataObject>
