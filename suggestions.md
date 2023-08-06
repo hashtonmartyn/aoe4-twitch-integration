@@ -23,6 +23,11 @@
 * Setting buildings on fire
 
 # Easy
+* Take resources from players:
+  * Gold
+  * Wood
+  * Food
+  * Stone
 * spawn best/coolest units of each civ?
   * royal culverins
   * rus monks
