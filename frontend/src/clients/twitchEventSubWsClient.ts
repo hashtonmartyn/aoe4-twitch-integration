@@ -1,4 +1,5 @@
 import axios from "axios";
+import {type PollResultStore, usePollResultStore} from "../stores/pollResult";
 
 enum ConnectionState {
   Opening,
@@ -6,6 +7,12 @@ enum ConnectionState {
   Closed,
   Error
 }
+
+const eventTypes = [
+    "channel.poll.begin",
+    "channel.poll.progress",
+    "channel.poll.end"
+]
 
 class EventSubWsClient {
   wsUrl: string
@@ -18,6 +25,7 @@ class EventSubWsClient {
   sessionId: string
 
   state: ConnectionState
+  store: PollResultStore
 
   constructor(
       wsUrl: string,
@@ -25,24 +33,73 @@ class EventSubWsClient {
       broadcasterId: string,
       accessToken: string,
       clientId: string,
-      onOpen: (event: Event) => void,
-      onMessage: (event: MessageEvent) => void,
-      onClose: (event: CloseEvent) => void,
-      onError: (event: Event) => void
+      pollResultStore: PollResultStore
   ) {
     this.wsUrl = wsUrl
     this.apiBaseUrl = apiBaseUrl
     this.broadcasterId = broadcasterId
     this.accessToken = accessToken
     this.clientId = clientId
+    this.store = pollResultStore
 
     this.socket = new WebSocket(this.wsUrl)
     this.state = ConnectionState.Opening
-    this.socket.onopen = onOpen
-    this.socket.onclose = onClose
-    this.socket.onmessage = onMessage
-    this.socket.onerror = onError
+    this.socket.onopen = this.onOpen
+    this.socket.onclose = this.onClose
+    this.socket.onmessage = this.onMessage
+    this.socket.onerror = this.onError
     this.sessionId = ""
+  }
+
+  onOpen(event: Event) {
+
+  }
+
+  onClose(event: CloseEvent) {
+    if (this.state == ConnectionState.Opening) {
+      this.store.setErrorMessage("Connection to twitch failed, try refreshing the page")
+    }
+
+    this.state = ConnectionState.Closed
+  }
+
+  onMessage(event: MessageEvent): Promise {
+    const data = JSON.parse(event.data)
+
+    switch (data.metadata.message_type) {
+      case "session_welcome": {
+        const sessionId = data.payload.session.id
+        return this.handleSessionWelcome(sessionId)
+      }
+    }
+
+    return Promise.resolve()
+  }
+
+  handleSessionWelcome(sessionId: string): Promise {
+    const promises = Promise.all(
+        eventTypes.map(eventType => {
+          return this.subscribe(eventType, sessionId).then(subscribed => {
+            return subscribed
+          }).catch(reason => {
+            this.store.setErrorMessage(
+                "Failed to subscribe to poll event updates, try refreshing the page?"
+            )
+            throw reason
+          })
+        }
+      )
+    )
+
+    return promises
+  }
+
+  onError(event: Event) {
+    if (this.state == ConnectionState.Opening) {
+      this.store.setErrorMessage("Connection to twitch failed, try refreshing the page")
+    }
+
+    this.state = ConnectionState.Closed
   }
 
   setState(state: ConnectionState) {
@@ -57,7 +114,7 @@ class EventSubWsClient {
     this.sessionId = sessionId
   }
 
-  async subscribe(eventType: string) {
+  subscribe(eventType: string, sessionId: string) {
     return axios.post(
       `${this.apiBaseUrl}/eventsub/subscriptions`,
       {
@@ -68,7 +125,7 @@ class EventSubWsClient {
         },
         transport: {
           method: "websocket",
-          session_id: this.sessionId
+          session_id: sessionId
         }
       },
       {
@@ -80,6 +137,8 @@ class EventSubWsClient {
       }
     ).then(result => {
       return result.status == 202
+    }).catch(reason => {
+      throw new Error(reason.message)
     })
   }
 
