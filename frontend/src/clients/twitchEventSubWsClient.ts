@@ -60,7 +60,7 @@ class EventSubWsClient {
     this.socket.onclose = this.onClose
     this.socket.onmessage = this.onMessage
     this.socket.onerror = this.onError
-    this.state = ConnectionState.Opening
+    Object.defineProperty(this.socket, "client", {value: this, writable: false})
   }
 
   disconnect() {
@@ -68,11 +68,11 @@ class EventSubWsClient {
     this.state = ConnectionState.Closed
   }
 
-  onOpen() {
+  onOpen = () => {
     this.state = ConnectionState.Opened
   }
 
-  onClose() {
+  onClose = () => {
     if (this.state == ConnectionState.Opening) {
       this.store.setErrorMessage("Connection to twitch failed, try refreshing the page")
     }
@@ -80,7 +80,7 @@ class EventSubWsClient {
     this.state = ConnectionState.Closed
   }
 
-  onMessage(event: MessageEvent): Promise<any> {
+  onMessage = (event: MessageEvent): Promise<any> => {
     const data = JSON.parse(event.data)
 
     switch (data.metadata.message_type) {
@@ -104,10 +104,6 @@ class EventSubWsClient {
   }
 
   private handleNotification(data: ChannelPollMessage): Promise<any> {
-    if (data.payload.event.id == this.lastPollEventId) {
-      return Promise.resolve()
-    }
-
     this.lastPollEventId = data.payload.event.id
 
     switch (data.payload.subscription.type) {
@@ -183,7 +179,7 @@ class EventSubWsClient {
             return subscribed
           }).catch(reason => {
             this.store.setErrorMessage(
-                "Failed to subscribe to poll event updates, try refreshing the page?"
+              "Failed to subscribe to poll event updates, try refreshing the page?"
             )
             throw reason
           })
@@ -198,7 +194,7 @@ class EventSubWsClient {
     return Promise.resolve()
   }
 
-  onError() {
+  onError = () => {
     if (this.state == ConnectionState.Opening) {
       this.store.setErrorMessage("Connection to twitch failed, try refreshing the page")
     }
@@ -206,9 +202,6 @@ class EventSubWsClient {
     this.state = ConnectionState.Closed
   }
 
-  getState(): ConnectionState {
-    return this.state
-  }
   private subscribe(eventType: string, sessionId: string) {
     return axios.post(
       `${this.apiBaseUrl}/eventsub/subscriptions`,

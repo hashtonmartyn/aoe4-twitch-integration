@@ -1,11 +1,7 @@
 <template>
-  <Message v-if="wsErrorMessage.length > 0" severity="error">{{ wsErrorMessage }}</Message>
+  <Message v-if="pollResultStore.errorMessage.length > 0" severity="error">{{ pollResultStore.errorMessage }}</Message>
   <Message v-if="pollSubmissionMessage.content.length > 0" :severity="pollSubmissionMessage.severity">
     {{pollSubmissionMessage.content}}
-  </Message>
-
-  <Message v-if="resultSubmissionMessage.content.length > 0" :severity="resultSubmissionMessage.severity">
-    {{resultSubmissionMessage.content}}
   </Message>
 
   <Accordion :active-index="0">
@@ -44,8 +40,8 @@
 <script async lang="ts" setup>
 import {useUserStore} from "@/stores/user";
 import {useRouter} from "vue-router";
-import {ConnectionState, EventSubWsClient} from "@/clients/twitchEventSubWsClient";
-import {ref} from "vue";
+import { EventSubWsClient, type WebSocketFactory} from "@/clients/twitchEventSubWsClient";
+import { ref, watch} from "vue";
 import Chart from "primevue/chart";
 import Message from "primevue/message";
 import InputNumber from "primevue/inputnumber";
@@ -57,11 +53,21 @@ import axios from "axios";
 import config from "../config";
 import {usePollConfigurationStore} from "@/stores/pollConfiguration";
 import {storeToRefs} from "pinia";
+import {usePollResultStore} from "@/stores/pollResult";
 
 const userStore = useUserStore()
 const router = useRouter()
 const pollConfigurationStore = usePollConfigurationStore()
 pollConfigurationStore.randomiseOptions()
+
+const pollResultStore = usePollResultStore()
+
+
+class WsFactory implements WebSocketFactory {
+  build(url: string): WebSocket {
+    return new WebSocket(url)
+  }
+}
 
 const {
   players,
@@ -72,33 +78,26 @@ if (!userStore.isAuthenticated) {
   router.push("/ConnectWithTwitch")
 }
 
-const wsErrorMessage = ref("")
 const pollSubmissionMessage = ref({
   severity: "",
   content: ""
 })
-const resultSubmissionMessage = ref({
-  severity: "",
-  content: ""
-})
-
-let lastPollEventId = ""
 
 function submitPoll() {
+  pollResultStore.reset()
   pollSubmissionMessage.value.content = ""
   pollSubmissionMessage.value.severity = ""
 
   axios.post(
-    `http://localhost:8080/mock/polls`,
+    `${config.twitchHelixApiBaseUri}/polls`,
     {
       broadcaster_id: userStore.broadcasterId,
       title: "What chaos shall we cause?",
       choices: Object.values(players.value).filter(player => player.id <= numberOfPlayers.value).map(player => {
         return {title: `${player.option} ${player.name}`}
       }),
-      duration: 300,
+      duration: 60,
       channel_points_voting_enabled: false,
-      channel_points_per_vote: 200
     },
     {
       headers: {
@@ -121,150 +120,16 @@ function submitPoll() {
   })
 }
 
-const eventTypes = [
-    "channel.poll.begin",
-    "channel.poll.progress",
-    "channel.poll.end"
-]
-function onOpen(){
-  wsClient.setState(ConnectionState.Opening)
-}
-function onClose(event: CloseEvent){
-  console.log(`Close event: ${event}`)
-  if (wsClient.getState() == ConnectionState.Opening) {
-    wsErrorMessage.value = "Connection to twitch failed, try refreshing the page"
-  }
-}
-function onError(){}
-function onMessage(event: MessageEvent){
-  const data = JSON.parse(event.data)
-  switch (data.metadata.message_type) {
-    case "session_welcome": {
-      handleSessionWelcome(data)
-      break
-    }
-    case "session_reconnect": {
-      handleSessionReconnect(data)
-      break
-    }
-    case "revocation": {
-      handleRevocation()
-      break
-    }
-    case "notification": {
-      handleNotification(data)
-      break
-    }
-    case "session_keepalive": {
-      break
-    }
-    default: {
-      console.log(data)
-    }
-  }
-}
-
-function handleNotification(data: any) {
-  console.log(data)
-  if (data.payload.event.id == lastPollEventId) {
-    return
-  }
-
-  lastPollEventId = data.payload.event.id
-
-  if (data.payload.subscription.type.startsWith("channel.poll")) {
-    handleChannelPollMessage(data)
-  }
-
-  if (data.payload.subscription.type == "channel.poll.end") {
-    handleChannelPollEnd(lastPollEventId)
-  }
-}
-
-function handleChannelPollEnd(eventId: string) {
-  resultSubmissionMessage.value.content = ""
-  resultSubmissionMessage.value.severity = ""
-
-  axios.post(
-      "/poll_result",
-      {
-        result: winningChoice.value,
-        event_id: eventId
-      },
-      {withCredentials: true}
-  ).then(result => {
-    if (result.status != 200) {
-      resultSubmissionMessage.value.content = "Failed to set poll result in the backend, poll result will not make it to the game :("
-      resultSubmissionMessage.value.severity = "error"
-    }
-  }).catch(_ => {
-    resultSubmissionMessage.value.content = "Failed to set poll result in the backend, poll result will not make it to the game :("
-    resultSubmissionMessage.value.severity = "error"
-  })
-}
-
-const winningChoice = ref("")
-
-function handleChannelPollMessage(data: any) {
-  const choiceLabels = data.payload.event.choices.map((choice: any) => choice.title)
-  const pollData = data.payload.event.choices.map((choice: any) => choice.bits_votes + choice.channel_points_votes + choice.votes)
-
-  winningChoice.value = choiceLabels[pollData.indexOf(Math.max(...pollData))]
-
-  chartData.value.labels = choiceLabels
-  chartData.value.datasets[0].data = pollData
-}
-
-function handleRevocation() {
-  console.log("Handling revocation")
-  wsErrorMessage.value = "Received revocation message, did you disconnect the aoe4-twitch-integration connection in your twitch account? Maybe try refreshing the page"
-}
-
-function handleSessionReconnect(data: any) {
-  console.log("Handling session reconnect")
-  wsClient.close()
-
-  const reconnectUrl = data.payload.session.reconnect_url
-
-  wsClient = new EventSubWsClient(
-    reconnectUrl,
-    config.twitchHelixApiBaseUri,
-    userStore.broadcasterId,
-    userStore.twitchAccessToken,
-    config.twitchClientId,
-    onOpen,
-    onMessage,
-    onClose,
-    onError
-  )
-}
-
-function handleSessionWelcome(data: any) {
-  console.log("Handling session welcome")
-  wsClient.setSessionId(data.payload.session.id)
-    eventTypes.forEach(eventType => {
-      wsClient.subscribe(eventType).then(subscribed => {
-        if (!subscribed) {
-          console.log(`Failed to subscribe to event ${eventType}`)
-          return
-        }
-
-        console.log(`Subscribed to event ${eventType}`)
-      })
-    })
-}
-
 let wsClient = new EventSubWsClient(
-    config.twitchWebSocketUrl,
     config.twitchHelixApiBaseUri,
     userStore.broadcasterId,
     userStore.twitchAccessToken,
     config.twitchClientId,
-    onOpen,
-    onMessage,
-    onClose,
-    onError
+    pollResultStore,
+    new WsFactory()
 )
+
+wsClient.connect(config.twitchWebSocketUrl)
 
 const chartData = ref({
   labels: [],
@@ -276,6 +141,15 @@ const chartData = ref({
     }
   ]
 });
+
+watch(
+    () => [pollResultStore.titles, pollResultStore.votes],
+    ([labels, votes]) => {
+      chartData.value.labels = labels
+      chartData.value.datasets[0].data = votes
+    }
+)
+
 const chartOptions = ref({
   plugins: {
     legend: {

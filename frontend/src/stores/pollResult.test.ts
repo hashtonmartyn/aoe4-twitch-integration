@@ -30,4 +30,30 @@ describe("Poll Result Store", () => {
     const winningChoice = store.winningChoice
     expect(winningChoice).toEqual("delete houses")
   })
+
+  it("can get the choice titles", () => {
+    store.setVotes("send boars", 10)
+    store.setVotes("delete houses", 20)
+    const actual = store.titles
+
+    expect(actual).toEqual(["send boars", "delete houses"])
+  })
+
+  it("can get the cotes", () => {
+    store.setVotes("send boars", 10)
+    store.setVotes("delete houses", 20)
+    const actual = store.votes
+
+    expect(actual).toEqual([10, 20])
+  })
+
+  it("can reset the the choices and error message", () => {
+    store.setVotes("send boars", 10)
+    store.setVotes("delete houses", 20)
+    store.setErrorMessage("oh no!")
+    store.reset()
+
+    expect(store.choices).toEqual({})
+    expect(store.errorMessage).toEqual("")
+  })
 })

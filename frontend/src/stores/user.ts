@@ -6,7 +6,9 @@ export const useUserStore = defineStore("user", {
     broadcasterId: ""
   }),
   getters: {
-    isAuthenticated: (state) => state.twitchAccessToken != ""
+    isAuthenticated: (state): boolean => {
+      return state.twitchAccessToken != ""
+    }
   },
   actions: {
     setToken(token: string) {
@@ -16,5 +18,5 @@ export const useUserStore = defineStore("user", {
       this.broadcasterId = broadcasterId
     }
   },
-  persist: true
+  persist: false
 })

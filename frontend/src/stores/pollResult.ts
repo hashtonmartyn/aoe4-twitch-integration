@@ -23,6 +23,12 @@ const usePollResultStore = defineStore("pollResultStore", {
       })
 
       return winningTitle
+    },
+    titles(state): string[] {
+      return Object.keys(state.choices)
+    },
+    votes(state): number[] {
+      return Object.values(state.choices)
     }
   },
   actions: {
@@ -31,6 +37,10 @@ const usePollResultStore = defineStore("pollResultStore", {
     },
     setVotes(title: string, votes: number) {
       this.choices[title] = votes
+    },
+    reset() {
+      this.errorMessage = ""
+      this.choices = {}
     }
   }
 })
