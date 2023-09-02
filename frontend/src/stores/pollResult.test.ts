@@ -39,7 +39,7 @@ describe("Poll Result Store", () => {
     expect(actual).toEqual(["send boars", "delete houses"])
   })
 
-  it("can get the cotes", () => {
+  it("can get the votes", () => {
     store.setVotes("send boars", 10)
     store.setVotes("delete houses", 20)
     const actual = store.votes
@@ -47,13 +47,21 @@ describe("Poll Result Store", () => {
     expect(actual).toEqual([10, 20])
   })
 
-  it("can reset the the choices and error message", () => {
+  it("can reset the choices, error message, and inProgress", () => {
     store.setVotes("send boars", 10)
     store.setVotes("delete houses", 20)
     store.setErrorMessage("oh no!")
+    store.setInProgress(true)
     store.reset()
 
     expect(store.choices).toEqual({})
     expect(store.errorMessage).toEqual("")
+    expect(store.inProgress).toBeFalsy()
+  })
+
+  it("can set in progress", () => {
+    expect(store.inProgress).toBeFalsy()
+    store.setInProgress(true)
+    expect(store.inProgress).toBeTruthy()
   })
 })

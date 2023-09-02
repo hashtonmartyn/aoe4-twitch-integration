@@ -7,7 +7,8 @@ type Choices = {
 const usePollResultStore = defineStore("pollResultStore", {
   state: () => ({
     errorMessage: "",
-    choices: {} as Choices
+    choices: {} as Choices,
+    inProgress: false
   }),
   getters: {
     winningChoice(state): string {
@@ -41,6 +42,11 @@ const usePollResultStore = defineStore("pollResultStore", {
     reset() {
       this.errorMessage = ""
       this.choices = {}
+      this.inProgress = false
+    },
+    setInProgress(inProgress: boolean) {
+      console.log(`Setting inProgress to ${inProgress}`)
+      this.inProgress = inProgress
     }
   }
 })

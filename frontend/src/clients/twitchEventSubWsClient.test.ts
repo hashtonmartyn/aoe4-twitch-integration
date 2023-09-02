@@ -196,7 +196,7 @@ describe("Twitch Event Sub Websocket Client", () => {
     expect(wsClient.state).toEqual(ConnectionState.Closed)
   })
 
-  it("should handle channel.poll.start", async() => {
+  it("should handle channel.poll.begin", async() => {
     const message = {
       data: JSON.stringify({
         metadata: {
@@ -204,7 +204,7 @@ describe("Twitch Event Sub Websocket Client", () => {
         },
         payload: {
           subscription: {
-            type: "channel.poll.start"
+            type: "channel.poll.begin"
           },
           event: {
             choices: [
@@ -229,6 +229,7 @@ describe("Twitch Event Sub Websocket Client", () => {
     await wsClient.onMessage(message)
 
     expect(store.choices).toEqual({"send boars": 0, "delete houses": 0})
+    expect(store.inProgress).toBeTruthy()
   })
 
   it("should handle channel.poll.progress", async() => {
@@ -308,6 +309,7 @@ describe("Twitch Event Sub Websocket Client", () => {
     await wsClient.onMessage(message)
 
     expect(store.choices).toEqual({"send boars": 12, "delete houses": 15})
+    expect(store.inProgress).toBeFalsy()
   })
 
   it("should handle channel.poll.end when submitting result to backend fails", async() => {

@@ -28,8 +28,19 @@
         </template>
       </div>
       <span class="p-buttonset flex justify-content-center mt-4">
-        <Button label="Randomise Options" icon="pi pi-sync" severity="warning" @click="pollConfigurationStore.randomiseOptions()" :disabled="!pollConfigurationStore.isPollConfigurationValid" />
-        <Button label="Submit Poll" icon="pi pi-check" @click="submitPoll" :disabled="!pollConfigurationStore.isPollConfigurationValid" />
+        <Button
+            label="Randomise Options"
+            icon="pi pi-sync"
+            severity="warning"
+            @click="pollConfigurationStore.randomiseOptions()"
+            :disabled="!canStartPoll"
+        />
+        <Button
+            label="Submit Poll"
+            icon="pi pi-check"
+            @click="submitPoll"
+            :disabled="!canStartPoll"
+        />
       </span>
     </AccordionTab>
   </Accordion>
@@ -41,7 +52,7 @@
 import {useUserStore} from "@/stores/user";
 import {useRouter} from "vue-router";
 import { EventSubWsClient, type WebSocketFactory} from "@/clients/twitchEventSubWsClient";
-import { ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import Chart from "primevue/chart";
 import Message from "primevue/message";
 import InputNumber from "primevue/inputnumber";
@@ -61,6 +72,18 @@ const pollConfigurationStore = usePollConfigurationStore()
 pollConfigurationStore.randomiseOptions()
 
 const pollResultStore = usePollResultStore()
+
+const {inProgress} = storeToRefs(pollResultStore)
+
+const inProgressReactive = reactive({
+  inProgress: inProgress
+})
+
+const canStartPoll = computed(() => {
+  const canStart = pollConfigurationStore.isPollConfigurationValid && !inProgressReactive.inProgress
+  console.log(`canStartPoll: ${canStart}`)
+  return canStart
+})
 
 
 class WsFactory implements WebSocketFactory {

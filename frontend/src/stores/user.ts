@@ -18,5 +18,7 @@ export const useUserStore = defineStore("user", {
       this.broadcasterId = broadcasterId
     }
   },
-  persist: false
+  persist: {
+    storage: sessionStorage
+  }
 })

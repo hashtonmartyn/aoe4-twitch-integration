@@ -105,10 +105,11 @@ class EventSubWsClient {
 
   private handleNotification(data: ChannelPollMessage): Promise<any> {
     this.lastPollEventId = data.payload.event.id
+    console.log(data)
 
     switch (data.payload.subscription.type) {
-      case "channel.poll.start": {
-        return this.handleChannelPollStart(data.payload.event.choices)
+      case "channel.poll.begin": {
+        return this.handleChannelPollBegin(data.payload.event.choices)
       }
       case "channel.poll.progress": {
         return this.handleChannelPollProgress(data.payload.event.choices)
@@ -122,6 +123,7 @@ class EventSubWsClient {
   }
 
   private handleChannelPollEnd(choices: Choice[], eventId: string): Promise<any> {
+    this.store.setInProgress(false)
     this.updateChannelPollVotes(choices)
 
     return axios.post(
@@ -153,7 +155,8 @@ class EventSubWsClient {
     return Promise.resolve()
   }
 
-  private handleChannelPollStart(choices: Choice[]): Promise<any> {
+  private handleChannelPollBegin(choices: Choice[]): Promise<any> {
+    this.store.setInProgress(true)
     this.updateChannelPollVotes(choices)
     return Promise.resolve()
   }
