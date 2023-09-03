@@ -1,5 +1,5 @@
 import {setActivePinia, createPinia} from "pinia";
-import {usePollConfigurationStore} from "@/stores/pollConfiguration";
+import {Colour, usePollConfigurationStore} from "@/stores/pollConfiguration";
 import {it, beforeEach, describe, expect} from "vitest";
 
 describe("Poll Configuration Store", () => {
@@ -54,55 +54,17 @@ describe("Poll Configuration Store", () => {
     })
   })
 
-  it("should be a invalid poll configuration by default", () => {
-    const store = usePollConfigurationStore()
-    expect(store.isPollConfigurationValid).toBeFalsy()
-  })
-
-  it("should be valid poll configuration when all of the players have names set", () => {
-    const store = usePollConfigurationStore()
-
-    store.setPlayerName(1, "abc")
-    store.setPlayerName(2, "bcd")
-
+  it("should be a valid poll configuration by default", () => {
+    const store= usePollConfigurationStore()
     expect(store.isPollConfigurationValid).toBeTruthy()
   })
 
-  it("should invalidate the poll configuration when a new player is added with no name", () => {
+  it("should be invalid if more than one player has the same colour", () => {
     const store = usePollConfigurationStore()
-
-    store.setPlayerName(1, "abc")
-    store.setPlayerName(2, "bcd")
-
-    expect(store.isPollConfigurationValid).toBeTruthy()
-
-    store.setNumberOfPlayers(3)
+    store.players[1].colour = Colour.Blue
+    store.players[2].colour = Colour.Blue
 
     expect(store.isPollConfigurationValid).toBeFalsy()
   })
 
-  it("should be able to set player names", () => {
-    const store = usePollConfigurationStore()
-    const newPlayerNames = [
-      "abc",
-      "bcd",
-      "def",
-      "efg",
-      "fgh",
-      "ghi",
-      "hij",
-      "ijk"
-    ]
-
-    Object.values(store.players).forEach((player, index) => {
-      expect(player.name).toEqual("")
-      const newName = newPlayerNames[index]
-      store.setPlayerName(index + 1, newName)
-    })
-
-    Object.values(store.players).forEach((player, index) => {
-      const newName = newPlayerNames[index]
-      expect(player.name).toEqual(newName)
-    })
-  })
 })

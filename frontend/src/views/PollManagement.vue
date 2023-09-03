@@ -12,8 +12,13 @@
       </div>
 
       <div v-for="n in numberOfPlayers" class="p-inputgroup flex-1 mb-2" :key="n">
-        <label for="playerOneName" class="font-bold block mb-2 mr-2"> Player{{ n }} name </label>
-        <InputText v-model="pollConfigurationStore.players[n].name"></InputText>
+        <label for="playerColour" class="font-bold block mb-2 mr-2"> Player{{ n }} colour </label>
+          <Dropdown
+              v-model="pollConfigurationStore.players[n].colour"
+              :options="allColours"
+              optionValue="value"
+              optionLabel="name"
+          />
       </div>
     </AccordionTab>
     <AccordionTab header="Poll Configuration">
@@ -21,9 +26,9 @@
         <template v-for="player in players" :key="player.id">
           <div
               class="flex align-items-center justify-content-center h-2rem bg-primary font-bold border-round m-2"
-              v-if="player.name.length > 0 && player.id <= numberOfPlayers" :key="player.id"
+              v-if="player.id <= numberOfPlayers" :key="player.id"
           >
-            {{player.option}} {{player.name}}
+            {{player.option}} {{player.colour}}
           </div>
         </template>
       </div>
@@ -56,13 +61,13 @@ import {computed, reactive, ref, watch} from "vue";
 import Chart from "primevue/chart";
 import Message from "primevue/message";
 import InputNumber from "primevue/inputnumber";
-import InputText from "primevue/inputtext";
+import Dropdown from "primevue/dropdown";
 import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import Button from "primevue/button";
 import axios from "axios";
 import config from "../config";
-import {usePollConfigurationStore} from "@/stores/pollConfiguration";
+import {Colour, usePollConfigurationStore} from "@/stores/pollConfiguration";
 import {storeToRefs} from "pinia";
 import {usePollResultStore} from "@/stores/pollResult";
 
@@ -85,6 +90,18 @@ const canStartPoll = computed(() => {
   return canStart
 })
 
+const allColours = ref([
+  {value: Colour[Colour.Blue], name: Colour.Blue},
+  {value: Colour[Colour.Red], name: Colour.Red},
+  {value: Colour[Colour.Green], name: Colour.Green},
+  {value: Colour[Colour.Yellow], name: Colour.Yellow},
+  {value: Colour[Colour.Purple], name: Colour.Purple},
+  {value: Colour[Colour.Orange], name: Colour.Orange},
+  {value: Colour[Colour.Teal], name: Colour.Teal},
+  {value: Colour[Colour.Pink], name: Colour.Pink}
+])
+
+// TODO: filter out poll events from previous polls. payload.event.id is the same as the response from submitting the poll to twitch
 
 class WsFactory implements WebSocketFactory {
   build(url: string): WebSocket {
@@ -117,7 +134,7 @@ function submitPoll() {
       broadcaster_id: userStore.broadcasterId,
       title: "What chaos shall we cause?",
       choices: Object.values(players.value).filter(player => player.id <= numberOfPlayers.value).map(player => {
-        return {title: `${player.option} ${player.name}`}
+        return {title: `${player.option} ${player.colour}`}
       }),
       duration: 60,
       channel_points_voting_enabled: false,
