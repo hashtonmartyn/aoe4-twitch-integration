@@ -24,12 +24,25 @@ type Players = {
 const usePollConfigurationStore = defineStore("pollConfiguration", {
   state: () => ({
     pollOptions: [
-      "Send wolves to",
-      "Delete a house from",
-      "Give gold to",
-      "Give buff villagers to",
-      "Send boars to",
-      "Give stone to"
+      "Send wolves: ",
+      "Send sheep: ",
+      "send photon man: ",
+      "Send bombards: ",
+      "Robin hood: ",
+      "Send elephants: ",
+      "Kill houses: ",
+      "Kill gers: ",
+      "Kill mining camps: ",
+      "Buff villagers: ",
+      "Vills wander off: ",
+      "Burn buildings: ",
+      "Send relics: ",
+      "Send boar: ",
+      "Send gold: ",
+      "Send food: ",
+      "Send wood: ",
+      "Send stone: ",
+      "Send nest of bees: ",
     ],
     numberOfPlayers: 2,
     players: {

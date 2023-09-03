@@ -67,4 +67,11 @@ describe("Poll Configuration Store", () => {
     expect(store.isPollConfigurationValid).toBeFalsy()
   })
 
+  it("should not have an options that are more than 19 characters in length", () => {
+    const store = usePollConfigurationStore()
+    store.pollOptions.forEach(option => {
+      expect(option.length, option).toBeLessThanOrEqual(19)
+    })
+  })
+
 })
