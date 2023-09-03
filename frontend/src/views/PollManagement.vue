@@ -101,8 +101,6 @@ const allColours = ref([
   {value: Colour[Colour.Pink], name: Colour.Pink}
 ])
 
-// TODO: filter out poll events from previous polls. payload.event.id is the same as the response from submitting the poll to twitch
-
 class WsFactory implements WebSocketFactory {
   build(url: string): WebSocket {
     return new WebSocket(url)
@@ -150,6 +148,8 @@ function submitPoll() {
     if (result.status == 200) {
       pollSubmissionMessage.value.content = "Poll submission succeeded"
       pollSubmissionMessage.value.severity = "success"
+      const pollId = result.data.data[0].id
+      pollResultStore.setPollId(pollId)
     } else {
       pollSubmissionMessage.value.content = "Poll submission failed, try again or refresh the page maybe?"
       pollSubmissionMessage.value.severity = "error"

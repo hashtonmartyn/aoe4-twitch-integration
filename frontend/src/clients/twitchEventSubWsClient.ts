@@ -31,8 +31,6 @@ class EventSubWsClient {
   state: ConnectionState
   store: PollResultStore
 
-  lastPollEventId: string
-
   constructor(
       apiBaseUrl: string,
       broadcasterId: string,
@@ -50,7 +48,6 @@ class EventSubWsClient {
     this.sessionId = ""
     this.socket = {} as WebSocket
     this.webSocketFactory = webSocketFactory
-    this.lastPollEventId = ""
   }
 
   connect(wsUrl: string) {
@@ -104,7 +101,10 @@ class EventSubWsClient {
   }
 
   private handleNotification(data: ChannelPollMessage): Promise<any> {
-    this.lastPollEventId = data.payload.event.id
+    if (data.payload.event.id != this.store.pollId) {
+      return Promise.resolve()
+    }
+
     console.log(data)
 
     switch (data.payload.subscription.type) {

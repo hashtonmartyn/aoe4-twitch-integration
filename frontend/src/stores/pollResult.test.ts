@@ -47,21 +47,29 @@ describe("Poll Result Store", () => {
     expect(actual).toEqual([10, 20])
   })
 
-  it("can reset the choices, error message, and inProgress", () => {
+  it("can reset the choices, error message, poll id,  and inProgress", () => {
     store.setVotes("send boars", 10)
     store.setVotes("delete houses", 20)
     store.setErrorMessage("oh no!")
     store.setInProgress(true)
+    store.setPollId("some-poll-id")
     store.reset()
 
     expect(store.choices).toEqual({})
     expect(store.errorMessage).toEqual("")
     expect(store.inProgress).toBeFalsy()
+    expect(store.pollId).toEqual("")
   })
 
   it("can set in progress", () => {
     expect(store.inProgress).toBeFalsy()
     store.setInProgress(true)
     expect(store.inProgress).toBeTruthy()
+  })
+
+  it("can set the poll id", () => {
+    expect(store.pollId).toEqual("")
+    store.setPollId("some-poll-id")
+    expect(store.pollId).toEqual("some-poll-id")
   })
 })
