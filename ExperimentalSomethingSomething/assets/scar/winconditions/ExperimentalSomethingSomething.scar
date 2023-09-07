@@ -2,23 +2,9 @@
 -- Imported Scripts
 -----------------------------------------------------------------------
 
--- Import Utility Scripts
 import("cardinal.scar")							-- Contains sfx references, UI templates, and Civ/Age helper functions
 import("ScarUtil.scar")							-- Contains game helper functions
-
--- Import Gameplay Systems
-import("gameplay/score.scar")					-- Tracks player score
-import("gameplay/diplomacy.scar")				-- Manages Tribute
-
--- Import Win Conditions
-import("winconditions/annihilation.scar")		-- Support for eliminating a player when they can no longer fight or produce units
-import("winconditions/elimination.scar")		-- Support for player quitting or dropping (through pause menu or disconnection)
-import("winconditions/surrender.scar")			-- Support for player surrender (through pause menu)
-
--- Import UI Support
-import("gameplay/chi/current_dynasty_ui.scar")	-- Displays Chinese Dynasty UI
-import("gameplay/event_cues.scar")
-import("gameplay/currentageui.scar")
+import("gamemodes/standard_mode.scar")
 
 -----------------------------------------------------------------------
 -- Data
@@ -27,7 +13,8 @@ import("gameplay/currentageui.scar")
 -- Global data table that can be referenced in script functions (e.g. _mod.module = "Mod")
 _mod = {
 	module = "Mod",
-	burnBuildingsMapIconIds = {}
+	burnBuildingsMapIconIds = {},
+	lastEventId = ""
 }
 
 _AskHostNotToLeave_UI = {
@@ -36,6 +23,17 @@ _AskHostNotToLeave_UI = {
 		Visible = true,
 		Text = LOC("Hey, please don't leave the game or the twitch integration will disconnect")
 	}
+}
+
+_COLOURS = {
+	Blue = {a = 255, b = 255, g = 140, r = 24},
+	Red = {a = 255, b = 48, g = 59, r = 255},
+	Purple = {a = 255, b = 255, g = 107, r = 174},
+	Orange = {a = 255, b = 0, g = 136, r = 255},
+	Pink = {a = 255, b = 178, g = 91, r = 246},
+	Green = {a = 255, b = 0, g = 199, r = 0},
+	Teal = {a = 255, b = 232, g = 232, r = 0},
+	Yellow = {a = 255, b = 0, g = 211, r = 235}
 }
 
 -- Register the win condition (Some functions can be prepended with "Mod_" to be called automatically as part of the scripting framework)
@@ -66,13 +64,12 @@ end
 
 -- Called after initialization is done when game is fading up from black
 function Mod_Start()
-	FOW_RevealAll()
 	Network_RegisterEvent("Mod_InterpretCommand")
 
 	if not UI_IsReplay() then
 		local isPlayerHost = Mod_IsPlayerHost(Game_GetLocalPlayer())
 		if isPlayerHost then
-			Rule_AddInterval(Mod_PublishPollResult, 10)
+			Rule_AddInterval(Mod_PublishPollResult, 1)
 		end
 	end
 end
@@ -95,10 +92,12 @@ function Mod_PublishPollResult()
 end
 
 
-function Mod_GetPlayerByName(playerName)
+function Mod_GetPlayerByColour(colourStr)
+	local desiredColour = _COLOURS[colourStr]
 	for _, player in pairs(PLAYERS) do
-		local temp = player.playerName.LocString
-		if player.playerName.LocString == playerName then
+		local colour = Player_GetUIColour(player.id)
+
+		if desiredColour.a == colour.a and desiredColour.r == colour.r and desiredColour.g == colour.g and desiredColour.b == colour.b then
 			return player
 		end
 	end
@@ -128,72 +127,92 @@ function Mod_InterpretCommand(sender_player_id, command)
 		splitCommand[#splitCommand + 1] = part
 	end
 	
-	local action = splitCommand[1]
-	local playerName = splitCommand[2]
-	local player = Mod_GetPlayerByName(playerName)
+	local eventId = splitCommand[1]
+	local action = splitCommand[2]
+	local playerColour = splitCommand[3]
 	
-	if player == nil then
-		print("Couldn't find player with name", playerName)
+	
+	if eventId == _mod.lastEventId then
 		return
 	end
 	
-	if action == "send wolves" then
+	_mod.lastEventId = eventId
+	
+	
+	if action == nil then
+		print("Couldn't get action from: ", command)
+		return
+	end
+	
+	if playerColour == nil then
+		print("Couldn't get player colour from: ", command)
+		return
+	end
+	
+	local player = Mod_GetPlayerByColour(playerColour)
+	
+	if player == nil then
+		print("Couldn't find player with colour", playerColour)
+		return
+	end
+	
+	if action == "Send wolves" then
 		Mod_HandleSpawnWolves(player)
-		Mod_SendEventNotificationToPlayers("Sent wolves to " .. playerName)
-	elseif action == "send sheep" then
+		Mod_SendEventNotificationToPlayers("Sent wolves to " .. playerColour)
+	elseif action == "Send sheep" then
 		Mod_HandleSpawnSheep(player)
-		Mod_SendEventNotificationToPlayers("Sent sheep to " .. playerName)
-	elseif action == "send photon man" then
+		Mod_SendEventNotificationToPlayers("Sent sheep to " .. playerColour)
+	elseif action == "Send photon man" then
 		Mod_HandleSpawnPhotonMan(player)
-		Mod_SendEventNotificationToPlayers("Sent photon man to " .. playerName)
-	elseif action == "send great bombards" then
+		Mod_SendEventNotificationToPlayers("Sent photon man to " .. playerColour)
+	elseif action == "Send bombards" then
 		Mod_HandleSpawnGreatBombards(player)
-		Mod_SendEventNotificationToPlayers("Sent great bombards to" .. playerName)
-	elseif action == "take stuff from and give to lowest score player" then
+		Mod_SendEventNotificationToPlayers("Sent great bombards to" .. playerColour)
+	elseif action == "Robin hood" then
 		Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
-		Mod_SendEventNotificationToPlayers("Took stuff from " .. playerName .. " and gave it to the next lowest score player")
-	elseif action == "send tower elephants" then
+		Mod_SendEventNotificationToPlayers("Took stuff from " .. playerColour .. " and gave it to the next lowest score player")
+	elseif action == "Send elephants" then
 		Mod_HandleSpawnTowerElephants(player)
-		Mod_SendEventNotificationToPlayers("Sent tower elephants to " .. playerName)
-	elseif action == "delete houses" then
+		Mod_SendEventNotificationToPlayers("Sent tower elephants to " .. playerColour)
+	elseif action == "Kill houses" then
 		Mod_HandleDeleteHouses(player)
-		Mod_SendEventNotificationToPlayers("Deleted some houses from " .. playerName)
-	elseif action == "delete gers" then
+		Mod_SendEventNotificationToPlayers("Deleted some houses from " .. playerColour)
+	elseif action == "Kill gers" then
 		Mod_HandleDeleteGers(player)
-		Mod_SendEventNotificationToPlayers("Deleted some gers from " .. playerName)
-	elseif action == "delete mining camps" then
+		Mod_SendEventNotificationToPlayers("Deleted some gers from " .. playerColour)
+	elseif action == "Kill mining camps" then
 		Mod_HandleDeleteMiningCamps(player)
-		Mod_SendEventNotificationToPlayers("Deleted some mining camps from " .. playerName)
-	elseif action == "buff villagers" then
+		Mod_SendEventNotificationToPlayers("Deleted some mining camps from " .. playerColour)
+	elseif action == "Buff villagers" then
 		Mod_HandleBuffVillagers(player)
-		Mod_SendEventNotificationToPlayers("Buffing villagers for " .. playerName)
-	elseif action == "villagers wander off" then
+		Mod_SendEventNotificationToPlayers("Buffing villagers for " .. playerColour)
+	elseif action == "Vills wander off" then
 		Mod_HandleVillagersWanderOff(player)
-		Mod_SendEventNotificationToPlayers("Villagers will wander off for " .. playerName)
-	elseif action == "burn buildings" then
+		Mod_SendEventNotificationToPlayers("Villagers will wander off for " .. playerColour)
+	elseif action == "Burn buildings" then
 		Mod_HandleBurnBuildings(player)
-		Mod_SendEventNotificationToPlayers("Set buildings on fire for " .. playerName)
-	elseif action == "send relics" then
+		Mod_SendEventNotificationToPlayers("Set buildings on fire for " .. playerColour)
+	elseif action == "Send relics" then
 		Mod_HandleSendRelics(player)
-		Mod_SendEventNotificationToPlayers("Sent relics to " .. playerName)
-	elseif action == "send boar" then
+		Mod_SendEventNotificationToPlayers("Sent relics to " .. playerColour)
+	elseif action == "Send boar" then
 		Mod_HandleSendBoar(player)
-		Mod_SendEventNotificationToPlayers("Sent boars to " .. playerName)
-	elseif action == "send gold" then
+		Mod_SendEventNotificationToPlayers("Sent boars to " .. playerColour)
+	elseif action == "Send gold" then
 		Mod_HandleSendGold(player)
-		Mod_SendEventNotificationToPlayers("Sent gold to " .. playerName)
-	elseif action == "send food" then
+		Mod_SendEventNotificationToPlayers("Sent gold to " .. playerColour)
+	elseif action == "Send food" then
 		Mod_HandleSendFood(player)
-		Mod_SendEventNotificationToPlayers("Sent food to " .. playerName)
-	elseif action == "send wood" then
+		Mod_SendEventNotificationToPlayers("Sent food to " .. playerColour)
+	elseif action == "Send wood" then
 		Mod_HandleSendWood(player)
-		Mod_SendEventNotificationToPlayers("Sent wood to " .. playerName)
-	elseif action == "send stone" then
+		Mod_SendEventNotificationToPlayers("Sent wood to " .. playerColour)
+	elseif action == "Send stone" then
 		Mod_HandleSendStone(player)
-		Mod_SendEventNotificationToPlayers("Sent stone to " .. playerName)
-	elseif action == "send nest of bees" then
+		Mod_SendEventNotificationToPlayers("Sent stone to " .. playerColour)
+	elseif action == "Send nest of bees" then
 		Mod_HandleSendNestOfBees(player)
-		Mod_SendEventNotificationToPlayers("Sent nest of bees to " .. playerName)
+		Mod_SendEventNotificationToPlayers("Sent nest of bees to " .. playerColour)
 	end
 end
 
