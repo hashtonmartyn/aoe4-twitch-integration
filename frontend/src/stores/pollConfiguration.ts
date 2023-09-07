@@ -81,7 +81,14 @@ const usePollConfigurationStore = defineStore("pollConfiguration", {
       this.numberOfPlayers = numberOfPlayers
     },
     randomiseOptions() {
-      Object.values(this.players).forEach(player => {
+      const rand = Math.floor(Math.random() * 10)
+      Object.values(this.players).filter(player => player.id <= this.numberOfPlayers).forEach((player: Player) => {
+        for(let i=0; i < rand; i++) {
+          if (this.numberOfPlayers > 5) {
+            player.id = ((player.id + this.numberOfPlayers) % this.numberOfPlayers) + 1
+          }
+        }
+
         player.option = this.pollOptions[Math.floor(Math.random() * this.pollOptions.length)]
       })
     },

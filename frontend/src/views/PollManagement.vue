@@ -26,7 +26,7 @@
         <template v-for="player in players" :key="player.id">
           <div
               class="flex align-items-center justify-content-center h-2rem bg-primary font-bold border-round m-2"
-              v-if="player.id <= numberOfPlayers" :key="player.id"
+              v-if="player.id <= Math.min(5, numberOfPlayers)" :key="player.id"
           >
             {{player.option}} {{player.colour}}
           </div>
@@ -131,7 +131,7 @@ function submitPoll() {
     {
       broadcaster_id: userStore.broadcasterId,
       title: "What chaos shall we cause?",
-      choices: Object.values(players.value).filter(player => player.id <= numberOfPlayers.value).map(player => {
+      choices: Object.values(players.value).filter(player => player.id <= Math.min(numberOfPlayers.value, 5)).map(player => {
         return {title: `${player.option}${player.colour}`}
       }),
       duration: 60,
@@ -187,6 +187,13 @@ watch(
     ([labels, votes]) => {
       chartData.value.labels = labels
       chartData.value.datasets[0].data = votes
+    }
+)
+
+watch(
+    () => [pollConfigurationStore.numberOfPlayers],
+    ([numberOfPlayers]) => {
+      pollConfigurationStore.randomiseOptions()
     }
 )
 
