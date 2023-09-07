@@ -26,7 +26,7 @@ const usePollConfigurationStore = defineStore("pollConfiguration", {
     pollOptions: [
       "Send wolves: ",
       "Send sheep: ",
-      "send photon man: ",
+      "Send photon man: ",
       "Send bombards: ",
       "Robin hood: ",
       "Send elephants: ",

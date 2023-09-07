@@ -132,7 +132,7 @@ function submitPoll() {
       broadcaster_id: userStore.broadcasterId,
       title: "What chaos shall we cause?",
       choices: Object.values(players.value).filter(player => player.id <= numberOfPlayers.value).map(player => {
-        return {title: `${player.option} ${player.colour}`}
+        return {title: `${player.option}${player.colour}`}
       }),
       duration: 60,
       channel_points_voting_enabled: false,

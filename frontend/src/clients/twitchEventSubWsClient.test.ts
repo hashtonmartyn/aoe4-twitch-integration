@@ -41,6 +41,7 @@ describe("Twitch Event Sub Websocket Client", () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     store = usePollResultStore()
+    store.setPollId("some-event-id")
 
     mockWebSocketFactory = new MockWebSocketFactory()
     wsClient = new EventSubWsClient(
@@ -207,6 +208,7 @@ describe("Twitch Event Sub Websocket Client", () => {
             type: "channel.poll.begin"
           },
           event: {
+            id: "some-event-id",
             choices: [
               {
                 title: "send boars",
@@ -243,6 +245,7 @@ describe("Twitch Event Sub Websocket Client", () => {
             type: "channel.poll.progress"
           },
           event: {
+            id: "some-event-id",
             choices: [
               {
                 title: "send boars",

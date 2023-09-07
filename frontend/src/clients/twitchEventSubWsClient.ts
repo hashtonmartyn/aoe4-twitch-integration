@@ -129,7 +129,7 @@ class EventSubWsClient {
     return axios.post(
       "/poll_result",
       {
-        result: this.store.winningChoice,
+        result: this.store.winningChoice.replace(": ", ","),
         event_id: eventId
       },
       {withCredentials: true}
