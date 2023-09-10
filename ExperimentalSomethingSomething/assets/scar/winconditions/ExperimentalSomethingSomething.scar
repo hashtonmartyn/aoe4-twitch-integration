@@ -67,7 +67,7 @@ function Mod_Start()
 	Network_RegisterEvent("Mod_InterpretCommand")
 
 	if not UI_IsReplay() then
-		local isPlayerHost = Mod_IsPlayerHost(Game_GetLocalPlayer())
+		local isPlayerHost = Mod_IsPlayerHost(Core_GetPlayersTableEntry(Game_GetLocalPlayer()))
 		if isPlayerHost then
 			Rule_AddInterval(Mod_PublishPollResult, 1)
 		end
@@ -76,10 +76,9 @@ end
 
 
 function Mod_IsPlayerHost(player)
-	local localPlayer = Game_GetLocalPlayer()
-	local playerSlotIndex = Player_GetSlotIndex(localPlayer)
-
-	return playerSlotIndex == 1
+	local host = Mod_GetPlayerByColour("Blue")
+	local isHost = host.playerName.LocString == player.playerName.LocString
+	return isHost
 end
 
 
