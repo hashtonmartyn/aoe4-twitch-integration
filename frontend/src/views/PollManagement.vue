@@ -202,7 +202,7 @@ function startAutomaticPolls() {
   automaticPollMessage.value.message = `Starting automatic polls, first poll will be submitted in ${pollConfigurationStore.pollInterval} seconds`
   automaticPollMessage.value.severity = "success"
 
-  automaticPollIntervalId.value = setInterval(() => {
+  automaticPollIntervalId.value = window.setInterval(() => {
     pollConfigurationStore.randomiseOptions()
     submitPoll()
   }, (pollConfigurationStore.pollInterval + pollConfigurationStore.pollDuration) * 1000)
@@ -270,11 +270,11 @@ let wsClient = new EventSubWsClient(
 wsClient.connect(config.twitchWebSocketUrl)
 
 const chartData = ref({
-  labels: [],
+  labels: [] as string[] | number[],
   datasets: [
     {
       label: "",
-      data: [],
+      data: [] as string[] | number[],
       borderWidth: 1
     }
   ]

@@ -1,5 +1,5 @@
 <template>
-  <img alt="logo" src="logo-editor.svg" class="hero"/>
+  <img alt="logo" src="/logo-editor.svg" class="hero"/>
 
   <div class="grid lg:mt-8">
     <div class="col-12 lg:col-8">
@@ -16,7 +16,7 @@
       </Card>
     </div>
     <div class="col-12 lg:col-4">
-      <img src="battle.png" alt="battle" class="battle">
+      <img src="/battle.png" alt="battle" class="battle">
     </div>
   </div>
 
