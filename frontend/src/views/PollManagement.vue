@@ -1,5 +1,10 @@
 <template>
-  <Message v-if="pollResultStore.errorMessage.length > 0" severity="error">{{ pollResultStore.errorMessage }}</Message>
+  <Message v-if="pollResultStore.errorMessage.length > 0" severity="error">
+    {{ pollResultStore.errorMessage }}
+  </Message>
+  <Message v-if="automaticPollMessage.show" :severity="automaticPollMessage.severity">
+    {{automaticPollMessage.message}}
+  </Message>
   <Message v-if="pollSubmissionMessage.content.length > 0" :severity="pollSubmissionMessage.severity">
     {{pollSubmissionMessage.content}}
   </Message>
@@ -22,6 +27,51 @@
       </div>
     </AccordionTab>
     <AccordionTab header="Poll Configuration">
+      <div class="grid mb-4">
+        <div class="col-12">
+          <div class="flex justify-content-center">
+            <label for="automatic" class="font-bold block"> Submit Polls Automatically </label>
+          </div>
+          <div class="flex justify-content-center">
+            <ToggleButton
+                v-model="pollConfigurationStore.automatic"
+                onIcon="pi pi-check"
+                offIcon="pi pi-times"
+                class="w-5rem align-items-center justify-content-center"
+                :disabled="automaticPollIntervalId != -1"
+            />
+          </div>
+        </div>
+        <div class="col-12" v-if="pollConfigurationStore.automatic">
+          <div class="grid">
+            <div class="lg:col-6">
+              <label for="pollDuration" class="font-bold block"> Poll Duration (seconds) </label>
+              <InputNumber
+                  v-model="pollConfigurationStore.pollDuration"
+                  :min="60"
+                  :max="600"
+                  inputId="pollInterval"
+                  showButtons
+                  style="width:100%"
+                  :disabled="automaticPollIntervalId != -1"
+              />
+            </div>
+            <div class="lg:col-6">
+              <label for="pollInterval" class="font-bold block"> Time Between Polls (seconds) </label>
+              <InputNumber
+                  v-model="pollConfigurationStore.pollInterval"
+                  :min="60"
+                  :max="1200"
+                  inputId="pollInterval"
+                  showButtons
+                  style="width:100%"
+                  :disabled="automaticPollIntervalId != -1"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="flex flex-column">
         <template v-for="player in players" :key="player.id">
           <div
@@ -32,19 +82,38 @@
           </div>
         </template>
       </div>
-      <span class="p-buttonset flex justify-content-center mt-4">
+      <span class="p-buttonset flex justify-content-center mt-4" v-if="!pollConfigurationStore.automatic">
         <Button
             label="Randomise Options"
             icon="pi pi-sync"
             severity="warning"
             @click="pollConfigurationStore.randomiseOptions()"
             :disabled="!canStartPoll"
+            class="w-12rem"
         />
         <Button
             label="Submit Poll"
             icon="pi pi-check"
             @click="submitPoll"
             :disabled="!canStartPoll"
+            class="w-12rem"
+        />
+      </span>
+      <span class="p-buttonset flex justify-content-center mt-4" v-if="pollConfigurationStore.automatic">
+        <Button
+            label="Stop Automatic Polls"
+            icon="pi pi-times"
+            severity="warning"
+            @click="stopAutomaticPolls"
+            :disabled="automaticPollIntervalId == -1"
+            class="w-14rem"
+        />
+        <Button
+            label="Start Automatic Polls"
+            icon="pi pi-check"
+            @click="startAutomaticPolls"
+            :disabled="automaticPollIntervalId != -1"
+            class="w-14rem"
         />
       </span>
     </AccordionTab>
@@ -70,6 +139,7 @@ import config from "../config";
 import {Colour, usePollConfigurationStore} from "@/stores/pollConfiguration";
 import {storeToRefs} from "pinia";
 import {usePollResultStore} from "@/stores/pollResult";
+import ToggleButton from "primevue/togglebutton";
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -121,6 +191,34 @@ const pollSubmissionMessage = ref({
   content: ""
 })
 
+let automaticPollIntervalId = ref(-1)
+const automaticPollMessage = ref({
+  show: false,
+  message: "",
+  severity: ""
+})
+function startAutomaticPolls() {
+  automaticPollMessage.value.show = true
+  automaticPollMessage.value.message = `Starting automatic polls, first poll will be submitted in ${pollConfigurationStore.pollInterval} seconds`
+  automaticPollMessage.value.severity = "success"
+
+  automaticPollIntervalId.value = setInterval(() => {
+    pollConfigurationStore.randomiseOptions()
+    submitPoll()
+  }, (pollConfigurationStore.pollInterval + pollConfigurationStore.pollDuration) * 1000)
+}
+
+function stopAutomaticPolls() {
+  automaticPollMessage.value.show = true
+  automaticPollMessage.value.message = "Stopping automatic polls"
+  automaticPollMessage.value.severity = "success"
+  pollSubmissionMessage.value.content = ""
+  pollSubmissionMessage.value.severity = ""
+
+  clearInterval(automaticPollIntervalId.value)
+  automaticPollIntervalId.value = -1
+}
+
 function submitPoll() {
   pollResultStore.reset()
   pollSubmissionMessage.value.content = ""
@@ -134,7 +232,7 @@ function submitPoll() {
       choices: Object.values(players.value).filter(player => player.id <= Math.min(numberOfPlayers.value, 5)).map(player => {
         return {title: `${player.option}${player.colour}`}
       }),
-      duration: 60,
+      duration: pollConfigurationStore.pollDuration,
       channel_points_voting_enabled: false,
     },
     {
@@ -194,6 +292,15 @@ watch(
     () => [pollConfigurationStore.numberOfPlayers],
     ([numberOfPlayers]) => {
       pollConfigurationStore.randomiseOptions()
+    }
+)
+
+watch(
+    () => [pollConfigurationStore.pollDuration],
+    ([pollDuration]) => {
+      if (pollDuration >= pollConfigurationStore.pollInterval + 10) {
+        pollConfigurationStore.pollInterval = pollDuration + 10
+      }
     }
 )
 
