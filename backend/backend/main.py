@@ -1,3 +1,4 @@
+import os
 from json import loads
 
 from oauthlib.oauth2 import OAuth2Token
@@ -12,24 +13,19 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from fastapi_csrf_protect import CsrfProtect
 from pydantic import BaseModel
-from os.path import dirname, realpath, pardir, join, abspath
 from loguru import logger
 
 
-def get_twitch_client_secret() -> str:
-    secret_path = abspath(join(dirname(realpath(__file__)), pardir, "twitch_client_secret"))
-    with open(secret_path) as fin:
-        return fin.read()
-
-
 TWITCH_CLIENT_ID = "j14afo5k3gvebt6sytw7p7t5o8syyg"
-TWITCH_CLIENT_SECRET = get_twitch_client_secret()
+TWITCH_CLIENT_SECRET = os.environ["TWITCH_CLIENT_SECRET"]
+CSRF_SECRET_KEY = os.environ["CSRF_SECRET_KEY"]
+SESSION_SECRET_KEY = os.environ["SESSION_SECRET_KEY"]
 
 httpx_transport = None  # Should only be used for testing, no other reason to set this
 
 
 class CsrfSettings(BaseModel):
-    secret_key: str = "asecrettoeverybody"
+    secret_key: str = CSRF_SECRET_KEY
     cookie_samesite: str = "none"
     cookie_secure: bool = True
 
@@ -40,10 +36,10 @@ def get_csrf_config():
 
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key="some-random-string", same_site="lax")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY, same_site="lax")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "https://aoe4ti.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,7 +65,7 @@ oauth = OAuth(update_token=update_token)
 oauth.register(
     "twitch",
     client_id="j14afo5k3gvebt6sytw7p7t5o8syyg",
-    client_secret=get_twitch_client_secret(),
+    client_secret=TWITCH_CLIENT_SECRET,
     client_kwargs={"scope": "channel:manage:polls"},
     scope="channel:manage:polls",
     redirect_uri="http://localhost:8000/login/twitch",
@@ -79,12 +75,17 @@ oauth.register(
 )
 
 
-redis = aioredis.from_url("redis://localhost")
+redis = aioredis.from_url("redis://default:7d10478ab2cc42fc9203752f5e3c859b@fly-aoe4ti-backend-redis.upstash.io")
 
 
 class Poll(BaseModel):
     result: str
     event_id: str
+
+
+@app.get("/healthcheck")
+def read_root():
+    return {"status": "ok"}
 
 
 @app.get("/login/twitch")
