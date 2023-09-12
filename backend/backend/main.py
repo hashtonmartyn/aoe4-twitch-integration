@@ -68,7 +68,7 @@ oauth.register(
     client_secret=TWITCH_CLIENT_SECRET,
     client_kwargs={"scope": "channel:manage:polls"},
     scope="channel:manage:polls",
-    redirect_uri="http://localhost:8000/login/twitch",
+    redirect_uri="https://aoe4ti-backend.fly.dev/login/twitch",
     authorize_url="https://id.twitch.tv/oauth2/authorize",
     token_endpoint="https://id.twitch.tv/oauth2/token",
     response_type="code",
@@ -110,7 +110,7 @@ async def auth_via_twitch(request: Request):
         error_description = request.query_params.get("error_description", "no_error_description")
 
         return RedirectResponse(
-            f"http://localhost:5173/TwitchAuth?error={error_name}&error_description={error_description}",
+            f"https://aoe4ti.com/TwitchAuth?error={error_name}&error_description={error_description}",
         )
 
     access_token = token["access_token"]
@@ -133,7 +133,7 @@ async def auth_via_twitch(request: Request):
     request.session["display_name"] = display_name
     request.session["broadcaster_id"] = broadcaster_id
 
-    return RedirectResponse("http://localhost:5173/TwitchAuth")
+    return RedirectResponse("https://aoe4ti.com/TwitchAuth")
 
 
 @app.get("/twitch_session_data")
