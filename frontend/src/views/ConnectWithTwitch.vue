@@ -2,5 +2,6 @@
 </template>
 
 <script lang="ts" setup>
-  window.location.href = "http://localhost:8000/login/twitch"
+import config from "../config";
+window.location.href = `${config.backendApiBaseUri}login/twitch`
 </script>
