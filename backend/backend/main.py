@@ -36,7 +36,7 @@ def get_csrf_config():
 
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY, same_site="lax")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY, same_site="lax", https_only=True)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "https://aoe4ti.com"],
@@ -90,7 +90,7 @@ def read_root():
 
 @app.get("/login/twitch")
 async def login_via_twitch(request: Request):
-    redirect_uri = request.url_for("auth_via_twitch")
+    redirect_uri = request.url_for("auth_via_twitch").replace(scheme="https")
     resp = await oauth.twitch.authorize_redirect(request, redirect_uri=redirect_uri)
     return resp
 
@@ -105,7 +105,8 @@ async def auth_via_twitch(request: Request):
             grant_type="authorization_code"
         )
     except OAuthError as err:
-        logger.error("Failed to authenticate user, error: ", err)
+        logger.error("Failed to authenticate user")
+        logger.exception(err)
         error_name = request.query_params.get("error", "unknown_error")
         error_description = request.query_params.get("error_description", "no_error_description")
 
