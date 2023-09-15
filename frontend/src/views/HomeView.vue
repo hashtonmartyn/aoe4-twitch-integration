@@ -2,7 +2,7 @@
   <img alt="logo" src="/logo-editor.svg" class="hero"/>
 
   <div class="grid lg:mt-8">
-    <div class="col-12 lg:col-8">
+    <div class="col-12 lg:col-7">
       <Card class="whatIsThis">
         <template #title>What is this?</template>
         <template #content>
@@ -15,7 +15,7 @@
         </template>
       </Card>
     </div>
-    <div class="col-12 lg:col-4">
+    <div class="col-12 lg:col-5">
       <img src="/battle.png" alt="battle" class="battle">
     </div>
   </div>

@@ -17,5 +17,7 @@ import PageHeader from "@/components/PageHeader.vue";
 <style>
 html {
   font-family: var(--font-family);
+  max-width: 1400px;
+  margin: auto;
 }
 </style>
