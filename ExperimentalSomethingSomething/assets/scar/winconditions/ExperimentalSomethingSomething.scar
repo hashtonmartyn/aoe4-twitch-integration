@@ -166,7 +166,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 		Mod_SendEventNotificationToPlayers("Sent photon man to " .. playerColour)
 	elseif action == "Send bombards" then
 		Mod_HandleSpawnGreatBombards(player)
-		Mod_SendEventNotificationToPlayers("Sent great bombards to" .. playerColour)
+		Mod_SendEventNotificationToPlayers("Sent great bombards to " .. playerColour)
 	elseif action == "Robin hood" then
 		Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
 		Mod_SendEventNotificationToPlayers("Took stuff from " .. playerColour .. " and gave it to the next lowest score player")
@@ -523,14 +523,16 @@ function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpaw
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	EGroup_Filter(player_entgroupobs, entityBpToSpawnOn, FILTER_KEEP)
 	
-	for i=1,EGroup_Count(player_entgroupobs),1 do
+	local entityBpToSpawnOnCount = EGroup_Count(player_entgroupobs)
+	
+	for i=1,entityBpToSpawnOnCount,1 do
 		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
 		
 		local sbp = BP_GetSquadBlueprint(blueprint)
 
 		local spawn_position = Entity_GetPosition(entity)
 		local sg = SGroup_CreateIfNotFound("some_sg")
-		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = 1 }}, spawn_position)
+		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = math.floor(numUnits / entityBpToSpawnOnCount) }}, spawn_position)
 		
 		if numUnits ~= nil and i >= numUnits then
 			return
