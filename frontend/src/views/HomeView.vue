@@ -22,10 +22,10 @@
 
   <h1 class="justify-content-center flex lg:mt-8">How Does It Work?</h1>
 
-  <div class="card">
-    <Timeline :value="events" align="alternate" class="customized-timeline">
+  <div v-if="bigScreen">
+    <Timeline :value="events" align="alternate">
       <template #marker="slotProps">
-        <span class="flex w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1">
+        <span class="flex ml-0 w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1">
           <i :class="slotProps.item.icon"></i>
         </span>
       </template>
@@ -43,6 +43,19 @@
       </template>
     </Timeline>
   </div>
+
+  <div v-if="!bigScreen">
+    <Card v-for="event in events" class="mt-2">
+      <template #title>
+        <i :class="event.icon"></i> {{ event.title }}
+      </template>
+      <template #content>
+        <p>
+          {{ event.description }}
+        </p>
+      </template>
+    </Card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -56,6 +69,8 @@ const events = ref([
   {title: "Powershell Script", icon: "pi pi-code", description: "One player must run a powershell script which retrieves the poll results from this website and makes them available to the mod by saving them to the player's PC."},
   {title: "Mod", icon: "pi pi-cog", description: "Each player must download the mod. The mod will retrieve poll results from the powershell script, interpret, and action them in-game"},
 ]);
+
+const bigScreen = ref(window.innerWidth >= 768)
 
 </script>
 
@@ -75,24 +90,13 @@ const events = ref([
 }
 
 
-@media screen and (max-width: 960px) {
-  ::v-deep(.customized-timeline) {
-    .p-timeline-event:nth-child(even) {
-      flex-direction: row !important;
-
-      .p-timeline-event-content {
-        text-align: left !important;
-      }
-    }
-
-    .p-timeline-event-opposite {
-      flex: 0;
-    }
-
-    .p-card {
-      margin-top: 1rem;
-    }
+@media screen and (max-width: 767px) {
+  /* Media query for screens smaller than 768px */
+  .p-timeline-event-opposite {
+    width: 0;
+    max-width: 0;
   }
+
 }
 
 </style>
