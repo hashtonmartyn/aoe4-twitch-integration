@@ -159,7 +159,7 @@ async def poll_result(request: Request, poll: Poll):
         raise HTTPException(status_code=404, detail="Missing data from the user's session")
 
     data = poll.json()
-    await redis.set(broadcaster_id, data)
+    await redis.set(broadcaster_id, data, ex=180)
 
 
 @app.get("/poll_result/{display_name}")
