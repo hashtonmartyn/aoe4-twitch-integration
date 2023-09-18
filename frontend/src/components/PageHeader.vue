@@ -1,5 +1,5 @@
 <template>
-  <Menubar :model="visibleItems">
+  <Menubar :model="visibleItems" class="mb-2">
     <template #end>
       <img alt="logo" src="/logo-favicon.svg" height="40" class="mr-2"/>
     </template>
@@ -16,10 +16,11 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const allItems = ref([
-  { label: 'Home', to: '/', visible: true },
-  { label: 'About', to: '/About', visible: true },
-  { label: 'Connect With Twitch', to: 'ConnectWithTwitch', visible: !userStore.isAuthenticated },
-  { label: 'Poll Management', to: '/PollManagement', visible: true}
+  { label: "Home", to: "/", visible: true },
+  { label: "About", to: "/About", visible: true },
+  { label: "Connect With Twitch", to: "ConnectWithTwitch", visible: !userStore.isAuthenticated },
+  { label: "Poll Management", to: "/PollManagement", visible: true},
+  { label: "Instructions", to: "/Instructions", visible: true}
 ]);
 
 router.afterEach(() => {

@@ -8,7 +8,7 @@ while ($true) {
         $response = Invoke-WebRequest -Uri $uri -Method 'GET' -Headers @{'Accept' = 'application/json'}
     } catch {
         Write-Host "Error: $_"
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
         continue
     }
 
@@ -19,5 +19,5 @@ while ($true) {
     $eventId = $rJson.event_id
     "return '$eventId,$result'" | Out-File -FilePath "C:\aoe4ti\poll_result.scar" -Encoding UTF8
 
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds 60
 }

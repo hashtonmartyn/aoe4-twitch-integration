@@ -1,7 +1,7 @@
 <template>
   <img alt="logo" src="/logo-editor.svg" class="hero"/>
 
-  <div class="grid lg:mt-8">
+  <div class="grid lg:mt-4">
     <div class="col-12 lg:col-7">
       <Card class="whatIsThis">
         <template #title>What is this?</template>
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <h1 class="justify-content-center flex lg:mt-8">How Does It Work?</h1>
+  <h1 class="justify-content-center flex lg:mt-4">How Does It Work?</h1>
 
   <div v-if="bigScreen">
     <Timeline :value="events" align="alternate">
