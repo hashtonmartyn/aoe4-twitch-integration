@@ -1,6 +1,6 @@
 ﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
 1,,,Mod name.,,,Twitch Integration
-2,,,Mod description.,,,"Other games are integrated with twitch so that chat can influence gameplay, this can provide fun and interesting new gameplay options for you and your viewers to enjoy. Now Age of Empires 4 has this functionality too! Using this website along with a few other tools your twitch chat can spawn units, give resources, delete buildings, and much more as you battle for victory. \r\n\r\nUse this mod in conjunction with the website: https://aoe4ti.com/ or else nothing will work"
+2,,,Mod description.,,,"Other games are integrated with twitch so that chat can influence gameplay, this can provide fun and interesting new gameplay options for you and your viewers to enjoy. Now Age of Empires 4 has this functionality too! Twitch chat can spawn units, give resources, delete buildings, and much more as you battle for victory. \r\n\r\nUse this mod in conjunction with the website: https://aoe4ti.com/ or else nothing will work."
 3,,,,,,Twitch Integration
 4,,,,,,Sent wolves to %1PLAYERCOLOUR%
 5,,,,,,Sent sheep to %1PLAYERCOLOUR%
@@ -29,3 +29,4 @@
 28,,,,,,Green
 29,,,,,,Teal
 30,,,,,,Yellow
+31,,,,,,"Other games are integrated with twitch so that chat can influence gameplay, this can provide fun and interesting new gameplay options for you and your viewers to enjoy. Now Age of Empires 4 has this functionality too! Twitch chat can spawn units, give resources, delete buildings, and much more as you battle for victory. \r\n\r\nUse this mod in conjunction with the website: https://aoe4ti.com/ or else nothing will work. Remember to select Blue as your colour if you are the one running the powershell script."
