@@ -13,18 +13,18 @@
 		<DataProperty Name="m_scarWinConditionFile" Type="String" Value="winconditions\Twitch Integration"/>
 		<DataProperty Name="m_feAllowSelectingStartingLocations" Type="Bool" Value="true"/>
 		<DataProperty Name="m_playerUpgrades" Type="Object"/>
-		<DataProperty Name="m_feIcon" Type="String" Value="icons\campaign\xbox\campaign_tutorial_icon"/>
+		<DataProperty Name="m_feIcon" Type="String" Value=""/>
 		<DataProperty Name="m_scarMissionFile" Type="String" Value=""/>
-		<DataProperty Name="m_feImageSelected" Type="String" Value=""/>
+		<DataProperty Name="m_feImageSelected" Type="String" Value="icons\cta\illustrations\15_pay_tribute_b"/>
 		<DataProperty Name="m_feDescriptionTooltip" Type="Object">
 			<DataValue Name="util::ReflectLocString">5143280947686309864</DataValue>
 			<!--WinCondition/util::ReflectLocString/-->
 			<DataObject Name="" Type="util::ReflectLocString" Id="5143280947686309864" OwnerId="5337499209158727832">
-				<DataProperty Name="m_modPart2" Type="UInt32" Value="0"/>
-				<DataProperty Name="m_modPart3" Type="UInt32" Value="0"/>
-				<DataProperty Name="m_modPart0" Type="UInt32" Value="0"/>
-				<DataProperty Name="m_modPart1" Type="UInt32" Value="0"/>
-				<DataProperty Name="m_locStringKey" Type="Int32" Value="0"/>
+				<DataProperty Name="m_modPart2" Type="UInt32" Value="4072891813"/>
+				<DataProperty Name="m_modPart3" Type="UInt32" Value="3773173326"/>
+				<DataProperty Name="m_modPart0" Type="UInt32" Value="149124284"/>
+				<DataProperty Name="m_modPart1" Type="UInt32" Value="1317156457"/>
+				<DataProperty Name="m_locStringKey" Type="Int32" Value="31"/>
 			</DataObject>
 		</DataProperty>
 		<DataProperty Name="m_startingBuildingReplacements" Type="Object"/>
