@@ -166,81 +166,43 @@ function Mod_InterpretCommand(sender_player_id, command)
 	end
 
 	if action == "Send wolves" then
-		Mod_HandleSpawnWolves(player)
-		Mod_SendEventNotificationToPlayersById(4, playerColour)
-		print("Sent wolves to " .. playerColour)
+		Mod_HandleSpawnWolves(player, playerColour)
 	elseif action == "Send sheep" then
-		Mod_HandleSpawnSheep(player)
-		Mod_SendEventNotificationToPlayersById(5, playerColour)
-		print("Sent sheep to " .. playerColour)
+		Mod_HandleSpawnSheep(player, playerColour)
 	elseif action == "Send photon man" then
-		Mod_HandleSpawnPhotonMan(player)
-		Mod_SendEventNotificationToPlayersById(6, playerColour)
-		print("Sent photon man to " .. playerColour)
+		Mod_HandleSpawnPhotonMan(player, playerColour)
 	elseif action == "Send bombards" then
-		Mod_HandleSpawnGreatBombards(player)
-		Mod_SendEventNotificationToPlayersById(7, playerColour)
-		print("Sent great bombards to " .. playerColour)
+		Mod_HandleSpawnGreatBombards(player, playerColour)
 	elseif action == "Robin hood" then
-		Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
-		Mod_SendEventNotificationToPlayersById(8, playerColour)
-		print("Took stuff from " .. playerColour .. " and gave it to the next lowest score player")
+		Mod_HandleConvertUnitsToNextLowestScorePlayer(player, playerColour)
 	elseif action == "Send elephants" then
-		Mod_HandleSpawnTowerElephants(player)
-		Mod_SendEventNotificationToPlayersById(9, playerColour)
-		print("Sent tower elephants to " .. playerColour)
+		Mod_HandleSpawnTowerElephants(player, playerColour)
 	elseif action == "Kill houses" then
-		Mod_HandleDeleteHouses(player)
-		Mod_SendEventNotificationToPlayersById(10, playerColour)
-		print("Deleted some houses from " .. playerColour)
+		Mod_HandleDeleteHouses(player, playerColour)
 	elseif action == "Kill gers" then
-		Mod_HandleDeleteGers(player)
-		Mod_SendEventNotificationToPlayersById(11, playerColour)
-		print("Deleted some gers from " .. playerColour)
+		Mod_HandleDeleteGers(player, playerColour)
 	elseif action == "Kill mining camps" then
-		Mod_HandleDeleteMiningCamps(player)
-		Mod_SendEventNotificationToPlayersById(12, playerColour)
-		print("Deleted some mining camps from " .. playerColour)
+		Mod_HandleDeleteMiningCamps(player, playerColour)
 	elseif action == "Buff villagers" then
-		Mod_HandleBuffVillagers(player)
-		Mod_SendEventNotificationToPlayersById(13, playerColour)
-		print("Buffing villagers for " .. playerColour)
+		Mod_HandleBuffVillagers(player, playerColour)
 	elseif action == "Vills wander off" then
-		Mod_HandleVillagersWanderOff(player)
-		Mod_SendEventNotificationToPlayersById(14, playerColour)
-		print("Villagers will wander off for " .. playerColour)
+		Mod_HandleVillagersWanderOff(player, playerColour)
 	elseif action == "Burn buildings" then
-		Mod_HandleBurnBuildings(player)
-		Mod_SendEventNotificationToPlayersById(15, playerColour)
-		print("Set buildings on fire for " .. playerColour)
+		Mod_HandleBurnBuildings(player, playerColour)
 	elseif action == "Send relics" then
-		Mod_HandleSendRelics(player)
-		Mod_SendEventNotificationToPlayersById(16, playerColour)
-		print("Sent relics to " .. playerColour)
+		Mod_HandleSendRelics(player, playerColour)
 	elseif action == "Send boar" then
-		Mod_HandleSendBoar(player)
-		Mod_SendEventNotificationToPlayersById(17, playerColour)
-		print("Sent boars to " .. playerColour)
+		Mod_HandleSendBoar(player, playerColour)
 	elseif action == "Send gold" then
-		Mod_HandleSendGold(player)
-		Mod_SendEventNotificationToPlayersById(18, playerColour)
-		print("Sent gold to " .. playerColour)
+		Mod_HandleSendGold(player, playerColour)
 	elseif action == "Send food" then
-		Mod_HandleSendFood(player)
-		Mod_SendEventNotificationToPlayersById(19, playerColour)
-		print("Sent food to " .. playerColour)
+		Mod_HandleSendFood(player, playerColour)
 	elseif action == "Send wood" then
-		Mod_HandleSendWood(player)
-		Mod_SendEventNotificationToPlayersById(20, playerColour)
-		print("Sent wood to " .. playerColour)
+		Mod_HandleSendWood(player, playerColour)
 	elseif action == "Send stone" then
-		Mod_HandleSendStone(player)
-		Mod_SendEventNotificationToPlayersById(21, playerColour)
-		print("Sent stone to " .. playerColour)
+		Mod_HandleSendStone(player, playerColour)
 	elseif action == "Send nest of bees" then
-		Mod_HandleSendNestOfBees(player)
-		Mod_SendEventNotificationToPlayersById(22, playerColour)
-		print("Sent nest of bees to " .. playerColour)
+		Mod_HandleSendNestOfBees(player, playerColour)
 	end
 end
 
