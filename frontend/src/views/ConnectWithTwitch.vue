@@ -32,7 +32,7 @@
 
         <h2>7. Intellectual Property</h2>
 
-        All content and materials on the Website, including text, graphics, logos, and software, are the property of [Your Website Name] and are protected by copyright and other intellectual property laws. You may not use our content without our express written permission.
+        All content and materials on the Website, including text, graphics, logos, and software, are the property of aoe4ti.com and are protected by copyright and other intellectual property laws. You may not use our content without our express written permission.
 
         <h2>8. Termination of Service</h2>
 
