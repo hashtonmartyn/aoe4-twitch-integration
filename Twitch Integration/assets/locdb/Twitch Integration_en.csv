@@ -1,0 +1,31 @@
+﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
+1,,,Mod name.,,,Twitch Integration
+2,,,Mod description.,,,"Other games are integrated with twitch so that chat can influence gameplay, this can provide fun and interesting new gameplay options for you and your viewers to enjoy. Now Age of Empires 4 has this functionality too! Using this website along with a few other tools your twitch chat can spawn units, give resources, delete buildings, and much more as you battle for victory. \r\n\r\nUse this mod in conjunction with the website: https://aoe4ti.com/ or else nothing will work"
+3,,,,,,Twitch Integration
+4,,,,,,Sent wolves to %1PLAYERCOLOUR%
+5,,,,,,Sent sheep to %1PLAYERCOLOUR%
+6,,,,,,Sent photon man to %1PLAYERCOLOUR%
+7,,,,,,Sent great bombards to %1PLAYERCOLOUR%
+8,,,,,,Took stuff from %1PLAYERCOLOUR% and gave it to the next lowest score player
+9,,,,,,Sent tower elephants to %1PLAYERCOLOUR%
+10,,,,,,Deleted some houses from %1PLAYERCOLOUR%
+11,,,,,,Deleted some gers from %1PLAYERCOLOUR%
+12,,,,,,Deleted some mining camps from %1PLAYERCOLOUR%
+13,,,,,,Buffing villagers for %1PLAYERCOLOUR%
+14,,,,,,Villagers will wander off for %1PLAYERCOLOUR%
+15,,,,,,Set buildings on fire for %1PLAYERCOLOUR%
+16,,,,,,Sent relics to %1PLAYERCOLOUR%
+17,,,,,,Sent boars to %1PLAYERCOLOUR%
+18,,,,,,Sent gold to %1PLAYERCOLOUR%
+19,,,,,,Sent food to %1PLAYERCOLOUR%
+20,,,,,,Sent wood to %1PLAYERCOLOUR%
+21,,,,,,Sent stone to %1PLAYERCOLOUR%
+22,,,,,,Sent nest of bees to %1PLAYERCOLOUR%
+23,,,,,,Blue
+24,,,,,,Red
+25,,,,,,Purple
+26,,,,,,Orange
+27,,,,,,Pink
+28,,,,,,Green
+29,,,,,,Teal
+30,,,,,,Yellow

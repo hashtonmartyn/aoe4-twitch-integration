@@ -1,0 +1,28 @@
+<DataWarehouse>
+	<!--Twitch Integration/-->
+	<DataObject Name="Twitch Integration" Type="Mod" Id="6967116538201621252" Version="1">
+		<DataProperty Name="m_description" Type="Object">
+			<DataValue Name="util::ReflectLocString">940748608479685624</DataValue>
+			<!--Twitch Integration/util::ReflectLocString/-->
+			<DataObject Name="" Type="util::ReflectLocString" Id="940748608479685624" OwnerId="6967116538201621252">
+				<DataProperty Name="m_modPart2" Type="UInt32" Value="4072891813"/>
+				<DataProperty Name="m_modPart3" Type="UInt32" Value="3773173326"/>
+				<DataProperty Name="m_modPart0" Type="UInt32" Value="149124284"/>
+				<DataProperty Name="m_modPart1" Type="UInt32" Value="1317156457"/>
+				<DataProperty Name="m_locStringKey" Type="Int32" Value="2"/>
+			</DataObject>
+		</DataProperty>
+		<DataProperty Name="m_name" Type="Object">
+			<DataValue Name="util::ReflectLocString">3701695350434474496</DataValue>
+			<!--Twitch Integration/util::ReflectLocString/-->
+			<DataObject Name="" Type="util::ReflectLocString" Id="3701695350434474496" OwnerId="6967116538201621252">
+				<DataProperty Name="m_modPart2" Type="UInt32" Value="4072891813"/>
+				<DataProperty Name="m_modPart3" Type="UInt32" Value="3773173326"/>
+				<DataProperty Name="m_modPart0" Type="UInt32" Value="149124284"/>
+				<DataProperty Name="m_modPart1" Type="UInt32" Value="1317156457"/>
+				<DataProperty Name="m_locStringKey" Type="Int32" Value="1"/>
+			</DataObject>
+		</DataProperty>
+	</DataObject>
+</DataWarehouse>
+

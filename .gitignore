@@ -5,3 +5,6 @@ backend/twitch_client_secret
 /ExperimentalSomethingSomething/cache/
 /ExperimentalSomethingSomething/archives/
 /ExperimentalSomethingSomething/.aoe4/
+/Twitch Integration/.aoe4/
+/Twitch Integration/cache/
+/Twitch Integration/archives/

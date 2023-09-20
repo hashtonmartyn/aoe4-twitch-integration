@@ -1,0 +1,645 @@
+-----------------------------------------------------------------------
+-- Imported Scripts
+-----------------------------------------------------------------------
+
+import("cardinal.scar")							-- Contains sfx references, UI templates, and Civ/Age helper functions
+import("ScarUtil.scar")							-- Contains game helper functions
+import("gamemodes/standard_mode.scar")
+
+-----------------------------------------------------------------------
+-- Data
+-----------------------------------------------------------------------
+
+-- Global data table that can be referenced in script functions (e.g. _mod.module = "Mod")
+_mod = {
+	module = "Mod",
+	burnBuildingsMapIconIds = {},
+	lastEventId = "",
+	locPrefix = "$08e374bc36694e82a565c3f24e0ee6e0:"
+}
+
+_AskHostNotToLeave_UI = {
+	name = "_AskHostNotToLeave_UI",
+	data_context = {
+		Visible = true,
+		Text = LOC("Hey, please don't leave the game or the twitch integration will disconnect")
+	}
+}
+
+_COLOURS = {
+	Blue = {a = 255, b = 255, g = 140, r = 24, text = Loc_FormatText(_mod.locPrefix .. 23)},
+	Red = {a = 255, b = 48, g = 59, r = 255, text = Loc_FormatText(_mod.locPrefix .. 24)},
+	Purple = {a = 255, b = 255, g = 107, r = 174, text = Loc_FormatText(_mod.locPrefix .. 25)},
+	Orange = {a = 255, b = 0, g = 136, r = 255, text = Loc_FormatText(_mod.locPrefix .. 26)},
+	Pink = {a = 255, b = 178, g = 91, r = 246, text = Loc_FormatText(_mod.locPrefix .. 27)},
+	Green = {a = 255, b = 0, g = 199, r = 0, text = Loc_FormatText(_mod.locPrefix .. 28)},
+	Teal = {a = 255, b = 232, g = 232, r = 0, text = Loc_FormatText(_mod.locPrefix .. 29)},
+	Yellow = {a = 255, b = 0, g = 211, r = 235, text = Loc_FormatText(_mod.locPrefix .. 30)}
+}
+
+
+-- Register the win condition (Some functions can be prepended with "Mod_" to be called automatically as part of the scripting framework)
+Core_RegisterModule(_mod.module)
+
+-----------------------------------------------------------------------
+-- Scripting framework
+-----------------------------------------------------------------------
+
+-- Called during load as part of the game setup sequence
+function Mod_OnGameSetup()
+
+
+
+end
+
+-- Called before initialization, preceding other module OnInit functions
+function Mod_PreInit()
+
+end
+
+-- Called on match initialization before handing control to the player
+function Mod_OnInit()
+
+
+
+end
+
+-- Called after initialization is done when game is fading up from black
+function Mod_Start()
+	Network_RegisterEvent("Mod_InterpretCommand")
+
+	if not UI_IsReplay() then
+		local isPlayerHost = Mod_IsPlayerHost(Core_GetPlayersTableEntry(Game_GetLocalPlayer()))
+		if isPlayerHost then
+			Rule_AddInterval(Mod_PublishPollResult, 1)
+		end
+	end
+end
+
+
+function Mod_IsPlayerHost(player)
+	local host = Mod_GetPlayerByColour("Blue")
+	local isHost = host.playerName.LocString == player.playerName.LocString
+	return isHost
+end
+
+
+function Mod_PublishPollResult()
+	local filePath = "C:/aoe4ti/poll_result.scar"
+	local func = assert(loadfile(filePath))
+	local command = func()
+
+	Network_CallEvent("Mod_InterpretCommand", command)
+end
+
+
+function Mod_GetPlayerByColour(colourStr)
+	local desiredColour = _COLOURS[colourStr]
+	for _, player in pairs(PLAYERS) do
+		local colour = Player_GetUIColour(player.id)
+
+		if desiredColour.a == colour.a and desiredColour.r == colour.r and desiredColour.g == colour.g and desiredColour.b == colour.b then
+			return player
+		end
+	end
+	return nil
+end
+
+
+function Mod_GetLowestScoreAlivePlayer(excludePlayerId)
+	local lowestScorePlayer
+	for _, player in pairs(PLAYERS) do
+		if player.id ~= excludePlayerId and not Core_IsPlayerEliminated(player.id) then
+			if lowestScorePlayer == nil then
+				lowestScorePlayer = player
+			elseif player.score < lowestScorePlayer.score then
+				lowestScorePlayer = player
+			end
+		end
+	end
+
+	return lowestScorePlayer
+end
+
+
+function Mod_SendEventNotificationToPlayersById(id, playerColour)
+	local eventLocId = "$08e374bc36694e82a565c3f24e0ee6e0:" .. id
+	local formattedColour = _COLOURS[playerColour].text
+	local formattedEvent = Loc_FormatText(eventLocId, formattedColour)
+	Mod_SendEventNotificationToPlayers(formattedEvent)
+end
+
+
+function Mod_InterpretCommand(sender_player_id, command)
+	local splitCommand = {}
+	for part in string.gmatch(command, '([^,]+)') do
+		splitCommand[#splitCommand + 1] = part
+	end
+
+	local eventId = splitCommand[1]
+	local action = splitCommand[2]
+	local playerColour = splitCommand[3]
+
+
+	if eventId == _mod.lastEventId then
+		return
+	end
+
+	_mod.lastEventId = eventId
+
+
+	if action == nil then
+		print("Couldn't get action from: ", command)
+		return
+	end
+
+	if playerColour == nil then
+		print("Couldn't get player colour from: ", command)
+		return
+	end
+
+	local player = Mod_GetPlayerByColour(playerColour)
+
+	if player == nil then
+		print("Couldn't find player with colour", playerColour)
+		return
+	end
+
+	if action == "Send wolves" then
+		Mod_HandleSpawnWolves(player)
+		Mod_SendEventNotificationToPlayersById(4, playerColour)
+		print("Sent wolves to " .. playerColour)
+	elseif action == "Send sheep" then
+		Mod_HandleSpawnSheep(player)
+		Mod_SendEventNotificationToPlayersById(5, playerColour)
+		print("Sent sheep to " .. playerColour)
+	elseif action == "Send photon man" then
+		Mod_HandleSpawnPhotonMan(player)
+		Mod_SendEventNotificationToPlayersById(6, playerColour)
+		print("Sent photon man to " .. playerColour)
+	elseif action == "Send bombards" then
+		Mod_HandleSpawnGreatBombards(player)
+		Mod_SendEventNotificationToPlayersById(7, playerColour)
+		print("Sent great bombards to " .. playerColour)
+	elseif action == "Robin hood" then
+		Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
+		Mod_SendEventNotificationToPlayersById(8, playerColour)
+		print("Took stuff from " .. playerColour .. " and gave it to the next lowest score player")
+	elseif action == "Send elephants" then
+		Mod_HandleSpawnTowerElephants(player)
+		Mod_SendEventNotificationToPlayersById(9, playerColour)
+		print("Sent tower elephants to " .. playerColour)
+	elseif action == "Kill houses" then
+		Mod_HandleDeleteHouses(player)
+		Mod_SendEventNotificationToPlayersById(10, playerColour)
+		print("Deleted some houses from " .. playerColour)
+	elseif action == "Kill gers" then
+		Mod_HandleDeleteGers(player)
+		Mod_SendEventNotificationToPlayersById(11, playerColour)
+		print("Deleted some gers from " .. playerColour)
+	elseif action == "Kill mining camps" then
+		Mod_HandleDeleteMiningCamps(player)
+		Mod_SendEventNotificationToPlayersById(12, playerColour)
+		print("Deleted some mining camps from " .. playerColour)
+	elseif action == "Buff villagers" then
+		Mod_HandleBuffVillagers(player)
+		Mod_SendEventNotificationToPlayersById(13, playerColour)
+		print("Buffing villagers for " .. playerColour)
+	elseif action == "Vills wander off" then
+		Mod_HandleVillagersWanderOff(player)
+		Mod_SendEventNotificationToPlayersById(14, playerColour)
+		print("Villagers will wander off for " .. playerColour)
+	elseif action == "Burn buildings" then
+		Mod_HandleBurnBuildings(player)
+		Mod_SendEventNotificationToPlayersById(15, playerColour)
+		print("Set buildings on fire for " .. playerColour)
+	elseif action == "Send relics" then
+		Mod_HandleSendRelics(player)
+		Mod_SendEventNotificationToPlayersById(16, playerColour)
+		print("Sent relics to " .. playerColour)
+	elseif action == "Send boar" then
+		Mod_HandleSendBoar(player)
+		Mod_SendEventNotificationToPlayersById(17, playerColour)
+		print("Sent boars to " .. playerColour)
+	elseif action == "Send gold" then
+		Mod_HandleSendGold(player)
+		Mod_SendEventNotificationToPlayersById(18, playerColour)
+		print("Sent gold to " .. playerColour)
+	elseif action == "Send food" then
+		Mod_HandleSendFood(player)
+		Mod_SendEventNotificationToPlayersById(19, playerColour)
+		print("Sent food to " .. playerColour)
+	elseif action == "Send wood" then
+		Mod_HandleSendWood(player)
+		Mod_SendEventNotificationToPlayersById(20, playerColour)
+		print("Sent wood to " .. playerColour)
+	elseif action == "Send stone" then
+		Mod_HandleSendStone(player)
+		Mod_SendEventNotificationToPlayersById(21, playerColour)
+		print("Sent stone to " .. playerColour)
+	elseif action == "Send nest of bees" then
+		Mod_HandleSendNestOfBees(player)
+		Mod_SendEventNotificationToPlayersById(22, playerColour)
+		print("Sent nest of bees to " .. playerColour)
+	end
+end
+
+
+function Mod_HandleSendNestOfBees(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_nest_of_bees_4_clocktower_chi", Mod_CalculateNumUnits(1, 0.25))
+end
+
+
+function Mod_HandleSendStone(player)
+	Mod_HandleSendResource(player, RT_Stone)
+end
+
+
+function Mod_HandleSendWood(player)
+	Mod_HandleSendResource(player, RT_Wood)
+end
+
+
+function Mod_HandleSendFood(player)
+	Mod_HandleSendResource(player, RT_Food)
+end
+
+
+function Mod_HandleSendGold(player)
+	Mod_HandleSendResource(player, RT_Gold)
+end
+
+
+function Mod_HandleSendResource(player, resourceType)
+	local amount = Mod_CalculateNumUnits(100, 2, 2)
+	Player_AddResource(player.id, resourceType, amount)
+end
+
+
+function Mod_HandleSendBoar(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_boar", Mod_CalculateNumUnits(1, 0.2))
+end
+
+
+function Mod_HandleSendRelics(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "town_center", FILTER_KEEP)
+	local numRelics = Mod_CalculateNumUnits(1, 0.2)
+
+	for i=1,EGroup_Count(player_entgroupobs),1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+
+		local blueprint = BP_GetEntityBlueprintsWithType("relic")[1]
+
+		local sg = SGroup_CreateIfNotFound("some_sg")
+		local initialSpawnPosition = Entity_GetPosition(entity)
+		local tempRelic = Entity_Create(blueprint, player.id, initialSpawnPosition, true)
+		local spawnPosition = World_GetSpawnablePosition(Entity_GetPosition(entity), tempRelic)
+		Entity_Destroy(tempRelic)
+		local relic = Entity_Create(blueprint, player.id, spawnPosition, true)
+
+		Entity_Spawn(relic)
+
+		if numRelics ~= nil and i >= numRelics then
+			return
+		end
+	end
+end
+
+
+function Mod_HandleBurnBuildings(player)
+	local building_egroup = Player_GetAllEntities(player.id)
+	EGroup_Filter(building_egroup, "building", FILTER_KEEP)
+	local buildingCount = EGroup_Count(building_egroup)
+
+	local index = World_GetRand(1, buildingCount)
+	local centralBuilding = EGroup_GetEntityAt(building_egroup, index)
+	local center = Entity_GetPosition(centralBuilding)
+
+	local numBuildingsToSetOnFire = Mod_CalculateNumUnits(1, 0.25)
+	local tileSize = 4.5	-- TODO: double check this, probably wrong
+	local radius = tileSize * Mod_CalculateNumUnits(1, 1)
+
+	local mapIconId = MapIcon_CreatePosition(
+		center,
+		"icons\\minimap\\trade_route_enemy",
+		1,
+		255,
+		255,
+		255,
+		0
+	)
+
+	for i=1,buildingCount,1 do
+		if i > numBuildingsToSetOnFire then
+			return
+		end
+
+		local building = EGroup_GetEntityAt(building_egroup, i)
+		local distance = Util_GetDistance(centralBuilding, building)
+		local isBurnable = Entity_IsBurnable(building)
+
+		if isBurnable and distance < radius then
+			local burnThreshold = Entity_GetOnFireHealthPercentThreshold(building)
+			Entity_SetHealth(building, burnThreshold)
+		end
+	end
+
+	_mod.burnBuildingsMapIconIds[#_mod.burnBuildingsMapIconIds+1] = mapIconId
+
+	Rule_AddOneShot(Mod_RemoveMapIcon, 15, removeIconArgs)
+end
+
+
+function Mod_RemoveMapIcon()
+	local iconId = _mod.burnBuildingsMapIconIds[1]
+	table.remove(_mod.burnBuildingsMapIconIds, 1)
+	MapIcon_Destroy(iconId)
+	Rule_RemoveMe()
+end
+
+
+function Mod_HandleVillagersWanderOff(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+	local maxX = math.floor(World_GetWidth() / 2)
+	local minX = -maxX
+
+	local maxZ = math.floor(World_GetLength() / 2)
+	local minZ = -maxZ
+
+	for i=1,eGroupCount,1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+		local squad = Entity_GetSquad(entity)
+
+		local randX = World_GetRand(minX, maxX)
+		local randZ = World_GetRand(minZ, maxZ)
+		local randY = World_GetHeightAt(randX, randZ)
+
+		local pos = World_Pos(randX, randY, randZ)
+
+		local sgroup = SGroup_Create("some_vill")
+		SGroup_Add(sgroup, squad)
+
+		Cmd_AttackMove(sgroup, pos)
+
+		SGroup_Destroy("some_vill")
+	end
+end
+
+
+function Mod_HandleBuffVillagers(player)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+
+	Modify_EntityMaxHealth(player_entgroupobs, 75, MUT_Addition)
+	Mod_Modify_WeaponDamage(player_entgroupobs, "hardpoint_01", 6, MUT_Addition)
+end
+
+
+function Mod_Modify_WeaponDamage(groupid, hardpoint, factor, usage)
+	-- create the appropriate modifier
+	local modifier = Modifier_Create(MAT_Weapon, "damage_weapon_modifier", usage, false, factor, hardpoint)
+	local result = {}
+
+	local _ApplyModifierToSquad = function(gid, idx, sid)
+		if Squad_IsAlive(sid) and Squad_Count(sid) > 0 and Squad_HasWeaponHardpoint(sid, hardpoint) then
+			local modids = Modifier_ApplyToSquad(modifier, sid, 0)
+			table.insert(result, modids)
+			Modifier_AddToSquadTable(sid, modids)
+		end
+	end
+
+	local _ApplyModifierToEntity = function(gid, idx, eid)
+		if Entity_IsAlive(eid) then
+			local modids = Modifier_ApplyToEntity(modifier, eid, 0)
+			table.insert(result, modids)
+			Modifier_AddToEntityTable(eid, modids)
+		end
+	end
+
+	if (scartype(groupid) == ST_SGROUP) then
+		-- apply this to each squad in the group
+		SGroup_ForEachEx(groupid, _ApplyModifierToSquad, true, true)
+	elseif (scartype(groupid) == ST_EGROUP) then
+		-- apply this to each entity in the group
+		EGroup_ForEachEx(groupid, _ApplyModifierToEntity, true, true)
+	end
+
+	return result
+
+end
+
+
+function Mod_HandleDeleteMiningCamps(player)
+	local numMiningCamps = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, {"mining_camp"}, numMiningCamps, {})
+end
+
+
+function Mod_HandleDeleteGers(player)
+	local numHouses = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, {"ger"}, numHouses, {})
+end
+
+
+function Mod_HandleDeleteHouses(player)
+	local numHouses = Mod_CalculateNumUnits(1, 0.1)
+	Mod_HandleDeleteEntities(player, {"house"}, numHouses, {"ger"})
+end
+
+
+function Mod_HandleDeleteEntities(player, keepFilters, numEntities, removeFilters)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+
+	for _, filter in ipairs(keepFilters) do
+		EGroup_Filter(player_entgroupobs, filter, FILTER_KEEP)
+	end
+
+	for _, filter in ipairs(removeFilters) do
+		EGroup_Filter(player_entgroupobs, filter, FILTER_REMOVE)
+	end
+
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+
+	for i=1,numEntities,1 do
+		if i > eGroupCount then
+			return
+		end
+
+		local index = World_GetRand(1, eGroupCount)
+		local entity = EGroup_GetEntityAt(player_entgroupobs, index)
+
+		Entity_Kill(entity)
+	end
+end
+
+
+function Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
+	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player.id)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	local numUnits = Mod_CalculateNumUnits(1, 0.5)
+
+	EGroup_Filter(player_entgroupobs, "landmark", FILTER_REMOVE)
+	EGroup_Filter(player_entgroupobs, "building", FILTER_REMOVE)
+
+	local eGroupCount = EGroup_Count(player_entgroupobs)
+
+	for i=1,numUnits,1 do
+		if i > eGroupCount then
+			return
+		end
+
+		local index = World_GetRand(1, eGroupCount)
+		local entity = EGroup_GetEntityAt(player_entgroupobs, index)
+		local squad = Entity_GetSquad(entity)
+
+		Util_SetPlayerOwner(entity, lowestScorePlayer.id)
+
+		if squad ~= nil then
+			Util_SetPlayerOwner(squad, lowestScorePlayer.id)
+		end
+	end
+end
+
+
+function Mod_HandleSpawnTowerElephants(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_war_elephant_tower2_4_sul", Mod_CalculateNumUnits(1, 0.25))
+end
+
+
+function Mod_HandleSpawnGreatBombards(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_bombard_4_ott", Mod_CalculateNumUnits(1, 0.25))
+end
+
+
+function Mod_HandleSpawnPhotonMan(player)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_photon_man", 1)
+end
+
+
+function Mod_HandleSpawnSheep(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_herdable_sheep", Mod_CalculateNumUnits(1, 1))
+end
+
+
+function Mod_HandleSpawnWolves(player)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 1))
+end
+
+
+function Mod_HandleSpawnUnitsOnPlayersTc(player, blueprint, numUnits)
+	Mod_HandleSpawnUnitsOnPlayersEntities(
+		player,
+		blueprint,
+		"town_center",
+		numUnits
+	)
+end
+
+function Mod_HandleSpawnUnitsOnPlayersVillagers(player, blueprint, numUnits)
+	Mod_HandleSpawnUnitsOnPlayersEntities(
+		player,
+		blueprint,
+		"worker",
+		numUnits
+	)
+end
+
+
+function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpawnOn, numUnits)
+	local player_entgroupobs = Player_GetAllEntities(player.id)
+	EGroup_Filter(player_entgroupobs, entityBpToSpawnOn, FILTER_KEEP)
+
+	local entityBpToSpawnOnCount = EGroup_Count(player_entgroupobs)
+
+	for i=1,entityBpToSpawnOnCount,1 do
+		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
+
+		local sbp = BP_GetSquadBlueprint(blueprint)
+
+		local spawn_position = Entity_GetPosition(entity)
+		local sg = SGroup_CreateIfNotFound("some_sg")
+		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = math.floor(numUnits / entityBpToSpawnOnCount) }}, spawn_position)
+
+		if numUnits ~= nil and i >= numUnits then
+			return
+		end
+	end
+end
+
+
+function Mod_CalculateNumUnits(intercept, slope, exponent)
+	if exponent == nil then
+		exponent = 1
+	end
+	local gameTimeMins = World_GetGameTime() / 60.0
+	local numUnits = math.floor(slope * gameTimeMins ^ exponent + intercept)
+
+	return numUnits
+end
+
+
+function Mod_SendEventNotificationToPlayers(notificationText)
+	local colour = {
+		r = 255,
+		g = 255,
+		b = 255,
+		a = 255
+	}
+
+	UI_CreateEventCueClickable(
+		-1,
+		10.0,
+		0,
+		20.0,
+		notificationText,
+		Loc_Empty(),
+		"high_priority",
+		"",
+		"sfx_ui_event_queue_high_priority_play",
+		colour.r,
+		colour.g,
+		colour.b,
+		colour.a,
+		ECV_Queue,
+		nothing
+	)
+end
+
+function Mod_OnPlayerDefeated(player, reason)
+	local isPlayerHost = Mod_IsPlayerHost(player)
+	if isPlayerHost then
+		Mod_HandleAskHostNotToLeave()
+	end
+end
+
+
+function Mod_HandleAskHostNotToLeave()
+	_xaml =
+		[[<Grid
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:engineSharedEffects="clr-namespace:WPFGUI.Shared.Effects;assembly=EngineUI.Shaders"
+		Visibility="{Binding [Visible], Converter={StaticResource BoolToVis}}">
+			<Grid Width="900" Margin="0,0,0,0" VerticalAlignment="Bottom">
+				<Border BorderThickness="2" Margin="2" BorderBrush="{StaticResource PrimaryColorLightBrush}"/>
+				<Grid Margin="6">
+					<TextBlock
+						TextAlignment="Center"
+						Style="{StaticResource HUDTitleAltTextBlockStyle}"
+						Text="Hey, please don't leave the game or the twitch integration will disconnect" />
+				</Grid>
+			</Grid>
+		</Grid>
+		]]
+
+	UI_AddChild(
+		"ScarDefault",
+		"XamlPresenter",
+		_AskHostNotToLeave_UI.name,
+		{ IsHitTestVisible = true, Xaml = _xaml, DataContext = UI_CreateDataContext(_AskHostNotToLeave_UI)}
+	)
+	UI_SetPropertyValue(_AskHostNotToLeave_UI.name, "Visibility", "Visible")
+end
