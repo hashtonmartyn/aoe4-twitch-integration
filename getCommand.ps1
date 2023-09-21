@@ -19,5 +19,5 @@ while ($true) {
     $eventId = $rJson.event_id
     "return '$eventId,$result'" | Out-File -FilePath "C:\aoe4ti\poll_result.scar" -Encoding UTF8
 
-    Start-Sleep -Seconds 60
+    Start-Sleep -Seconds 10
 }

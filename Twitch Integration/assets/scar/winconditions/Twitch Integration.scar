@@ -37,7 +37,6 @@ _COLOURS = {
 	Yellow = {a = 255, b = 0, g = 211, r = 235, text = Loc_FormatText(_mod.locPrefix .. 30)}
 }
 
-
 -- Register the win condition (Some functions can be prepended with "Mod_" to be called automatically as part of the scripting framework)
 Core_RegisterModule(_mod.module)
 
@@ -165,69 +164,72 @@ function Mod_InterpretCommand(sender_player_id, command)
 		return
 	end
 
-	if action == "Send wolves" then
-		Mod_HandleSpawnWolves(player, playerColour)
-	elseif action == "Send sheep" then
-		Mod_HandleSpawnSheep(player, playerColour)
-	elseif action == "Send photon man" then
-		Mod_HandleSpawnPhotonMan(player, playerColour)
-	elseif action == "Send bombards" then
-		Mod_HandleSpawnGreatBombards(player, playerColour)
-	elseif action == "Robin hood" then
-		Mod_HandleConvertUnitsToNextLowestScorePlayer(player, playerColour)
-	elseif action == "Send elephants" then
-		Mod_HandleSpawnTowerElephants(player, playerColour)
-	elseif action == "Kill houses" then
-		Mod_HandleDeleteHouses(player, playerColour)
-	elseif action == "Kill gers" then
-		Mod_HandleDeleteGers(player, playerColour)
-	elseif action == "Kill mining camps" then
-		Mod_HandleDeleteMiningCamps(player, playerColour)
-	elseif action == "Buff villagers" then
-		Mod_HandleBuffVillagers(player, playerColour)
-	elseif action == "Vills wander off" then
-		Mod_HandleVillagersWanderOff(player, playerColour)
-	elseif action == "Burn buildings" then
-		Mod_HandleBurnBuildings(player, playerColour)
-	elseif action == "Send relics" then
-		Mod_HandleSendRelics(player, playerColour)
-	elseif action == "Send boar" then
-		Mod_HandleSendBoar(player, playerColour)
-	elseif action == "Send gold" then
-		Mod_HandleSendGold(player, playerColour)
-	elseif action == "Send food" then
-		Mod_HandleSendFood(player, playerColour)
-	elseif action == "Send wood" then
-		Mod_HandleSendWood(player, playerColour)
-	elseif action == "Send stone" then
-		Mod_HandleSendStone(player, playerColour)
-	elseif action == "Send nest of bees" then
-		Mod_HandleSendNestOfBees(player, playerColour)
+	local translation = {}
+	translation["Send wolves"] = Mod_HandleSpawnWolves
+	translation["Send sheep"] = Mod_HandleSpawnSheep
+	translation["Send photon man"] = Mod_HandleSpawnPhotonMan
+	translation["Send bombards"] = Mod_HandleSpawnGreatBombards
+	translation["Robin hood"] = Mod_HandleConvertUnitsToNextLowestScorePlayer
+	translation["Send elephants"] = Mod_HandleSpawnTowerElephants
+	translation["Kill houses"] = Mod_HandleDeleteHouses
+	translation["Kill gers"] = Mod_HandleDeleteGers
+	translation["Kill mining camps"] = Mod_HandleDeleteMiningCamps
+	translation["Buff villagers"] = Mod_HandleBuffVillagers
+	translation["Vills wander off"] = Mod_HandleVillagersWanderOff
+	translation["Burn buildings"] = Mod_HandleBurnBuildings
+	translation["Send relics"] = Mod_HandleSendRelics
+	translation["Send boar"] = Mod_HandleSendBoar
+	translation["Send gold"] = Mod_HandleSendGold
+	translation["Send food"] = Mod_HandleSendFood
+	translation["Send wood"] = Mod_HandleSendWood
+	translation["Send stone"] = Mod_HandleSendStone
+	translation["Send nest of bees"] = Mod_HandleSendNestOfBees
+
+	if action == "test" then
+		print("test")
+
+		for _, func in pairs(translation) do
+		  func(player, playerColour)
+		end
+		return
 	end
+
+	local func = translation[action]
+
+	if func == nil then
+		print("Couldn't find function for action", action)
+		return
+	end
+	func(player, playerColour)
 end
 
 
-function Mod_HandleSendNestOfBees(player)
+function Mod_HandleSendNestOfBees(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(22, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_nest_of_bees_4_clocktower_chi", Mod_CalculateNumUnits(1, 0.25))
 end
 
 
-function Mod_HandleSendStone(player)
+function Mod_HandleSendStone(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(21, playerColour)
 	Mod_HandleSendResource(player, RT_Stone)
 end
 
 
-function Mod_HandleSendWood(player)
+function Mod_HandleSendWood(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(20, playerColour)
 	Mod_HandleSendResource(player, RT_Wood)
 end
 
 
-function Mod_HandleSendFood(player)
+function Mod_HandleSendFood(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(19, playerColour)
 	Mod_HandleSendResource(player, RT_Food)
 end
 
 
-function Mod_HandleSendGold(player)
+function Mod_HandleSendGold(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(18, playerColour)
 	Mod_HandleSendResource(player, RT_Gold)
 end
 
@@ -238,12 +240,15 @@ function Mod_HandleSendResource(player, resourceType)
 end
 
 
-function Mod_HandleSendBoar(player)
+function Mod_HandleSendBoar(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(17, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_boar", Mod_CalculateNumUnits(1, 0.2))
 end
 
 
-function Mod_HandleSendRelics(player)
+function Mod_HandleSendRelics(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(16, playerColour)
+
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	EGroup_Filter(player_entgroupobs, "town_center", FILTER_KEEP)
 	local numRelics = Mod_CalculateNumUnits(1, 0.2)
@@ -269,7 +274,9 @@ function Mod_HandleSendRelics(player)
 end
 
 
-function Mod_HandleBurnBuildings(player)
+function Mod_HandleBurnBuildings(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(15, playerColour)
+
 	local building_egroup = Player_GetAllEntities(player.id)
 	EGroup_Filter(building_egroup, "building", FILTER_KEEP)
 	local buildingCount = EGroup_Count(building_egroup)
@@ -321,7 +328,9 @@ function Mod_RemoveMapIcon()
 end
 
 
-function Mod_HandleVillagersWanderOff(player)
+function Mod_HandleVillagersWanderOff(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(14, playerColour)
+
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
 	local eGroupCount = EGroup_Count(player_entgroupobs)
@@ -351,9 +360,12 @@ function Mod_HandleVillagersWanderOff(player)
 end
 
 
-function Mod_HandleBuffVillagers(player)
+function Mod_HandleBuffVillagers(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(13, playerColour)
+
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	EGroup_Filter(player_entgroupobs, "official", FILTER_REMOVE)
 
 	Modify_EntityMaxHealth(player_entgroupobs, 75, MUT_Addition)
 	Mod_Modify_WeaponDamage(player_entgroupobs, "hardpoint_01", 6, MUT_Addition)
@@ -394,19 +406,22 @@ function Mod_Modify_WeaponDamage(groupid, hardpoint, factor, usage)
 end
 
 
-function Mod_HandleDeleteMiningCamps(player)
+function Mod_HandleDeleteMiningCamps(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(12, playerColour)
 	local numMiningCamps = Mod_CalculateNumUnits(1, 0.1)
 	Mod_HandleDeleteEntities(player, {"mining_camp"}, numMiningCamps, {})
 end
 
 
-function Mod_HandleDeleteGers(player)
+function Mod_HandleDeleteGers(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(11, playerColour)
 	local numHouses = Mod_CalculateNumUnits(1, 0.1)
 	Mod_HandleDeleteEntities(player, {"ger"}, numHouses, {})
 end
 
 
-function Mod_HandleDeleteHouses(player)
+function Mod_HandleDeleteHouses(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(10, playerColour)
 	local numHouses = Mod_CalculateNumUnits(1, 0.1)
 	Mod_HandleDeleteEntities(player, {"house"}, numHouses, {"ger"})
 end
@@ -438,7 +453,9 @@ function Mod_HandleDeleteEntities(player, keepFilters, numEntities, removeFilter
 end
 
 
-function Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
+function Mod_HandleConvertUnitsToNextLowestScorePlayer(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(8, playerColour)
+
 	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player.id)
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	local numUnits = Mod_CalculateNumUnits(1, 0.5)
@@ -466,27 +483,34 @@ function Mod_HandleConvertUnitsToNextLowestScorePlayer(player)
 end
 
 
-function Mod_HandleSpawnTowerElephants(player)
+function Mod_HandleSpawnTowerElephants(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(9, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_war_elephant_tower2_4_sul", Mod_CalculateNumUnits(1, 0.25))
 end
 
 
-function Mod_HandleSpawnGreatBombards(player)
+function Mod_HandleSpawnGreatBombards(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(7, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_bombard_4_ott", Mod_CalculateNumUnits(1, 0.25))
+
 end
 
 
-function Mod_HandleSpawnPhotonMan(player)
+function Mod_HandleSpawnPhotonMan(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(6, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_photon_man", 1)
 end
 
 
-function Mod_HandleSpawnSheep(player)
+function Mod_HandleSpawnSheep(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(5, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_herdable_sheep", Mod_CalculateNumUnits(1, 1))
+
 end
 
 
-function Mod_HandleSpawnWolves(player)
+function Mod_HandleSpawnWolves(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(4, playerColour)
 	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 1))
 end
 
