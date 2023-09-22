@@ -5,7 +5,7 @@ while ($true) {
     $uri = "https://backend.aoe4ti.com/poll_result/$twitchUser"
     Write-Host "Get $uri"
     try {
-        $response = Invoke-WebRequest -Uri $uri -Method 'GET' -Headers @{'Accept' = 'application/json'}
+        $response = Invoke-WebRequest -Uri $uri -UseBasicParsing -Method 'GET' -Headers @{'Accept' = 'application/json'}
     } catch {
         Write-Host "Error: $_"
         Start-Sleep -Seconds 1
