@@ -364,7 +364,7 @@ function Mod_HandleBuffVillagers(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(13, playerColour)
 
 	local player_entgroupobs = Player_GetAllEntities(player.id)
-	EGroup_Filter(player_entgroupobs, "worker", FILTER_KEEP)
+	EGroup_Filter(player_entgroupobs, "villager", FILTER_KEEP)
 	EGroup_Filter(player_entgroupobs, "official", FILTER_REMOVE)
 
 	Modify_EntityMaxHealth(player_entgroupobs, 75, MUT_Addition)
