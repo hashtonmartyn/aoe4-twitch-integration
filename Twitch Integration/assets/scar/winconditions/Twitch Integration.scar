@@ -511,7 +511,7 @@ end
 
 function Mod_HandleSpawnWolves(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(4, playerColour)
-	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 1))
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 0.25))
 end
 
 
@@ -547,7 +547,13 @@ function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpaw
 
 		local spawn_position = Entity_GetPosition(entity)
 		local sg = SGroup_CreateIfNotFound("some_sg")
-		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = math.floor(numUnits / entityBpToSpawnOnCount) }}, spawn_position)
+		
+		local actualNum = math.floor(numUnits / entityBpToSpawnOnCount)
+		if actualNum <= 0 then
+			actualNum = numUnits
+		end
+		
+		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = actualNum }}, spawn_position)
 
 		if numUnits ~= nil and i >= numUnits then
 			return

@@ -42,6 +42,7 @@
 
 # Not too hard
 * kings from campaigns
+* Buff vill gather rates
 
 # Hard
 * Get good
