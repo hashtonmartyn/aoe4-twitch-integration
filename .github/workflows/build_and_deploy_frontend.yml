@@ -87,3 +87,4 @@ jobs:
         new_version="${{ steps.bump_version.outputs.new_version }}"
         issues=$(echo "${{ steps.find_issues.outputs.issues }}" | tr '\n' ',')
         gh release create "v$new_version" $(git log --pretty=format:'- %s' HEAD^..HEAD --grep="^Merge pull request #$issues from")
+
