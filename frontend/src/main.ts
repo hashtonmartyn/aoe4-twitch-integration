@@ -13,6 +13,7 @@ import 'primeicons/primeicons.css';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import config from "./config";
 import Chart from 'chart.js/auto'
+import axiosRetry from 'axios-retry';
 
 
 const app = createApp(App)
@@ -26,6 +27,10 @@ app.use(PrimeVue)
 
 Chart.defaults.color = "#FFF"
 Chart.defaults.borderColor = "#FFF"
+
+axiosRetry(axios, { retryDelay: (retryCount) => {
+  return retryCount * retryCount * 1000
+}});
 
 axios.defaults.baseURL = config.backendApiBaseUri;  // the FastAPI backend
 

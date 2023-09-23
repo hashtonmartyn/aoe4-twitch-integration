@@ -16,10 +16,14 @@ from pydantic import BaseModel
 from loguru import logger
 
 
-TWITCH_CLIENT_ID = "j14afo5k3gvebt6sytw7p7t5o8syyg"
+TWITCH_CLIENT_ID = os.environ["TWITCH_CLIENT_ID"]
 TWITCH_CLIENT_SECRET = os.environ["TWITCH_CLIENT_SECRET"]
 CSRF_SECRET_KEY = os.environ["CSRF_SECRET_KEY"]
 SESSION_SECRET_KEY = os.environ["SESSION_SECRET_KEY"]
+BACKEND_URI = os.environ["BACKEND_URI"]
+FRONTEND_URI = os.environ["FRONTEND_URI"]
+REDIS_URI = os.environ["REDIS_URI"]
+FORCE_HTTPS = os.environ.get("FORCE_HTTPS", "true").lower() == "true"
 
 httpx_transport = None  # Should only be used for testing, no other reason to set this
 
@@ -36,10 +40,10 @@ def get_csrf_config():
 
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY, same_site="lax", https_only=True)
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY, same_site="lax", https_only=FORCE_HTTPS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://aoe4ti.com"],
+    allow_origins=[FRONTEND_URI],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,18 +68,17 @@ def update_token(name, token, refresh_token=None, access_token=None):
 oauth = OAuth(update_token=update_token)
 oauth.register(
     "twitch",
-    client_id="j14afo5k3gvebt6sytw7p7t5o8syyg",
+    client_id=TWITCH_CLIENT_ID,
     client_secret=TWITCH_CLIENT_SECRET,
     client_kwargs={"scope": "channel:manage:polls"},
     scope="channel:manage:polls",
-    redirect_uri="https://aoe4ti-backend.fly.dev/login/twitch",
+    redirect_uri=f"{BACKEND_URI}/login/twitch",
     authorize_url="https://id.twitch.tv/oauth2/authorize",
     token_endpoint="https://id.twitch.tv/oauth2/token",
     response_type="code",
 )
 
-
-redis = aioredis.from_url("redis://default:7d10478ab2cc42fc9203752f5e3c859b@fly-aoe4ti-backend-redis.upstash.io")
+redis = aioredis.from_url(REDIS_URI)
 
 
 class Poll(BaseModel):
@@ -90,7 +93,9 @@ def read_root():
 
 @app.get("/login/twitch")
 async def login_via_twitch(request: Request):
-    redirect_uri = request.url_for("auth_via_twitch").replace(scheme="https")
+    redirect_uri = request.url_for("auth_via_twitch")
+    if FORCE_HTTPS:
+        redirect_uri = redirect_uri.replace(scheme="https")
     resp = await oauth.twitch.authorize_redirect(request, redirect_uri=redirect_uri)
     return resp
 
@@ -111,7 +116,7 @@ async def auth_via_twitch(request: Request):
         error_description = request.query_params.get("error_description", "no_error_description")
 
         return RedirectResponse(
-            f"https://aoe4ti.com/TwitchAuth?error={error_name}&error_description={error_description}",
+            f"{FRONTEND_URI}/TwitchAuth?error={error_name}&error_description={error_description}",
         )
 
     access_token = token["access_token"]
@@ -134,7 +139,7 @@ async def auth_via_twitch(request: Request):
     request.session["display_name"] = display_name
     request.session["broadcaster_id"] = broadcaster_id
 
-    return RedirectResponse("https://aoe4ti.com/TwitchAuth")
+    return RedirectResponse(f"{FRONTEND_URI}/TwitchAuth")
 
 
 @app.get("/twitch_session_data")
