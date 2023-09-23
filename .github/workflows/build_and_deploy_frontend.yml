@@ -4,67 +4,19 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [ closed ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    if: github.event.pull_request.merged
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Find Closed Issues
-      id: find_issues
-      run: |
-        # Extract issue titles from merged pull requests
-        echo "::set-output name=issues::$(git log --merges --pretty=format:'%s' HEAD^..HEAD | grep 'Merge pull request' | sed 's/Merge pull request #[0-9]* from [^/]*\///')"
-
-    - name: Determine Release Type
-      id: determine_release_type
-      run: |
-        # Determine the release type based on issue labels
-        labels=($(gh issue view --json labels --jq '.labels[].name' $(echo "${{ steps.find_issues.outputs.issues }}" | tr '\n' ',' | sed 's/,$//')))
-        release_type="patch"
-        for label in "${labels[@]}"; do
-          if [[ "$label" == "enhancement" ]]; then
-            release_type="minor"
-          elif [[ "$label" == "breaking-change" ]]; then
-            release_type="major"
-          fi
-        done
-        echo "::set-output name=release_type::$release_type"
-
-    - name: Get Previous Release Version
-      id: get_previous_version
-      run: |
-        # Get the previous release version from tags
-        git fetch --tags
-        previous_tag=$(git describe --abbrev=0 --tags)
-        echo "::set-output name=previous_version::$previous_tag"
-
-    - name: Bump Version
-      id: bump_version
-      run: |
-        # Bump the version based on SemVer
-        current_version="${{ steps.get_previous_version.outputs.previous_version }}"
-        release_type="${{ steps.determine_release_type.outputs.release_type }}"
-        IFS='.' read -r major minor patch <<< "$current_version"
-        case "$release_type" in
-          "major")
-            major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-          "minor")
-            minor=$((minor + 1))
-            patch=0
-            ;;
-          "patch")
-            patch=$((patch + 1))
-            ;;
-        esac
-        new_version="$major.$minor.$patch"
-        echo "::set-output name=new_version::$new_version"
 
     - name: Install dependencies and build
       run: |
@@ -80,11 +32,9 @@ jobs:
         publish_dir: ./frontend/dist
         cname: aoe4ti.com
 
-    - name: Create Release
-      id: create_release
-      run: |
-        # Create a new release using the calculated version and issue titles
-        new_version="${{ steps.bump_version.outputs.new_version }}"
-        issues=$(echo "${{ steps.find_issues.outputs.issues }}" | tr '\n' ',')
-        gh release create "v$new_version" $(git log --pretty=format:'- %s' HEAD^..HEAD --grep="^Merge pull request #$issues from")
-
+    - name: Tag
+      uses: K-Phoen/semver-release-action@master
+      with:
+        release_branch: master
+      env:
+        GITHUB_TOKEN: ${{ secrets.ACTIONS_GITHUB_TOKEN }}
