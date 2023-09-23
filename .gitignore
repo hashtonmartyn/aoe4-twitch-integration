@@ -8,3 +8,4 @@ backend/twitch_client_secret
 /Twitch Integration/.aoe4/
 /Twitch Integration/cache/
 /Twitch Integration/archives/
+.env

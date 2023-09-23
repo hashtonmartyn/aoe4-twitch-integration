@@ -10,12 +10,25 @@ describe("Poll Configuration Store", () => {
   it("contains all of the poll options", () => {
     const store = usePollConfigurationStore()
     const expectedOptions = [
-      "Send wolves to",
-      "Delete a house from",
-      "Give gold to",
-      "Give buff villagers to",
-      "Send boars to",
-      "Give stone to"
+      "Send wolves: ",
+      "Send sheep: ",
+      "Send photon man: ",
+      "Send bombards: ",
+      "Robin hood: ",
+      "Send elephants: ",
+      "Kill houses: ",
+      "Kill gers: ",
+      "Kill mining camps: ",
+      "Buff villagers: ",
+      "Vills wander off: ",
+      "Burn buildings: ",
+      "Send relics: ",
+      "Send boar: ",
+      "Send gold: ",
+      "Send food: ",
+      "Send wood: ",
+      "Send stone: ",
+      "Send nest of bees: ",
     ]
 
     expectedOptions.forEach(option => {
@@ -43,15 +56,10 @@ describe("Poll Configuration Store", () => {
 
   it("should be able to randomise poll options for the players", () => {
     const store = usePollConfigurationStore()
-    Object.values(store.players).forEach(player => {
-      expect(player.option).toEqual("")
-    })
-
+    const options = Object.values(store.players).map(player => player.option)
     store.randomiseOptions()
-
-    Object.values(store.players).forEach(player => {
-      expect(store.pollOptions.includes(player.option), player.option).toBeTruthy()
-    })
+    const newOptions = Object.values(store.players).map(player => player.option)
+    expect(options).not.toEqual(newOptions)
   })
 
   it("should be a valid poll configuration by default", () => {

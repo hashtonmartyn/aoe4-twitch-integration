@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "axios-retry": "^3.8.0"
+  }
+}
