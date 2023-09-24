@@ -457,6 +457,10 @@ function Mod_HandleConvertUnitsToNextLowestScorePlayer(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(8, playerColour)
 
 	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player.id)
+	if lowestScorePlayer == nil then
+		return
+	end
+
 	local player_entgroupobs = Player_GetAllEntities(player.id)
 	local numUnits = Mod_CalculateNumUnits(1, 0.5)
 
@@ -511,7 +515,7 @@ end
 
 function Mod_HandleSpawnWolves(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(4, playerColour)
-	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 0.01))
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "gaia_huntable_wolf", Mod_CalculateNumUnits(1, 0.5))
 end
 
 
@@ -540,18 +544,17 @@ function Mod_HandleSpawnUnitsOnPlayersEntities(player, blueprint, entityBpToSpaw
 
 	local entityBpToSpawnOnCount = EGroup_Count(player_entgroupobs)
 
+	local actualNum = math.floor(numUnits / entityBpToSpawnOnCount)
+	if actualNum < 1 then
+		actualNum = 1
+	end
+
 	for i=1,entityBpToSpawnOnCount,1 do
 		local entity = EGroup_GetEntityAt(player_entgroupobs, i)
 
 		local sbp = BP_GetSquadBlueprint(blueprint)
-
 		local spawn_position = Entity_GetPosition(entity)
 		local sg = SGroup_CreateIfNotFound("some_sg")
-		
-		local actualNum = math.floor(numUnits / entityBpToSpawnOnCount)
-		if actualNum <= 0 then
-			actualNum = numUnits
-		end
 		
 		UnitEntry_DeploySquads(player.id, sg, {{sbp = sbp, numSquads = actualNum }}, spawn_position)
 
