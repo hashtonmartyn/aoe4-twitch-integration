@@ -1,76 +1,17 @@
 name: Build and Deploy to GitHub Pages
 
 on:
-  pull_request:
-    types: [ closed ]
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    if: github.event.pull_request.merged
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Determine Release Type
-      id: determine_release_type
-      run: |
-        # Determine the release type based on the pull request label
-        label=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | tr -d '"')
-        release_type="patch"
-        case "$label" in
-          "major")
-            release_type="major"
-            ;;
-          "minor")
-            release_type="minor"
-            ;;
-        esac
-        echo "::set-output name=release_type::$release_type"
-
-    - name: Get Previous Release Version
-      id: get_previous_version
-      run: |
-        # Get the previous release version from tags
-        git fetch --tags
-        previous_tag=$(git describe --abbrev=0 --tags)
-        echo "::set-output name=previous_version::$previous_tag"
-
-    - name: Bump Version
-      id: bump_version
-      run: |
-        # Bump the version based on SemVer
-        current_version="${{ steps.get_previous_version.outputs.previous_version }}"
-        release_type="${{ steps.determine_release_type.outputs.release_type }}"
-        IFS='.' read -r major minor patch <<< "$current_version"
-        case "$release_type" in
-          "major")
-            major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-          "minor")
-            minor=$((minor + 1))
-            patch=0
-            ;;
-          "patch")
-            patch=$((patch + 1))
-            ;;
-        esac
-        new_version="$major.$minor.$patch"
-        echo "::set-output name=new_version::$new_version"
-
-    - name: Get Closed Issue Title
-      id: get_issue_title
-      run: |
-        # Get the title of the closed issue linked to the pull request
-        issue_number=$(gh pr view ${{ github.event.pull_request.number }} --json base.repo.issue.url --jq '.base.repo.issue.number')
-        issue_title=$(gh issue view $issue_number --json title --jq '.title')
-        echo "::set-output name=issue_title::$issue_title"
-      env:
-        GITHUB_TOKEN: ${{ secrets.ACTIONS_GITHUB_TOKEN }}
 
     - name: Install dependencies and build
       run: |
@@ -85,12 +26,3 @@ jobs:
         github_token: ${{ secrets.ACTIONS_GITHUB_TOKEN }}
         publish_dir: ./frontend/dist
         cname: aoe4ti.com
-
-    - name: Create Release
-      id: create_release
-      run: |
-        # Create a new release using the calculated version and issue title
-        new_version="${{ steps.bump_version.outputs.new_version }}"
-        issue_title="${{ steps.get_issue_title.outputs.issue_title }}"
-        release_notes="- **$issue_title** ([#$issue_number](${{ github.event.pull_request.html_url }}))"
-        gh release create "v$new_version" -t "Release $new_version" -n "$release_notes"
