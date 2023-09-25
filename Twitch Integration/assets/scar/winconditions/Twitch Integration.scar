@@ -215,6 +215,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 	translation["Send wood"] = Mod_HandleSendWood
 	translation["Send stone"] = Mod_HandleSendStone
 	translation["Send nest of bees"] = Mod_HandleSendNestOfBees
+	translation["Kill wonder"] = Mod_HandleDeleteWonder
 
 	if action == "test" then
 		print("test")
@@ -232,6 +233,12 @@ function Mod_InterpretCommand(sender_player_id, command)
 		return
 	end
 	func(player, playerColour)
+end
+
+
+function Mod_HandleDeleteWonder(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(33, playerColour)
+	Mod_HandleDeleteEntities(player, {"wonder"}, 1, {})
 end
 
 
@@ -289,7 +296,6 @@ function Mod_HandleSendRelics(player, playerColour)
 
 		local blueprint = BP_GetEntityBlueprintsWithType("relic")[1]
 
-		local sg = SGroup_CreateIfNotFound("some_sg")
 		local initialSpawnPosition = Entity_GetPosition(entity)
 		local tempRelic = Entity_Create(blueprint, player.id, initialSpawnPosition, true)
 		local spawnPosition = World_GetSpawnablePosition(Entity_GetPosition(entity), tempRelic)
