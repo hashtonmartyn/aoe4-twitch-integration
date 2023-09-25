@@ -105,19 +105,41 @@ function Mod_GetPlayerByColour(colourStr)
 end
 
 
-function Mod_GetLowestScoreAlivePlayer(excludePlayerId)
+function Mod_GetColourByPlayer(player)
+	local rgba = Player_GetUIColour(player.id)
+	for text, colour in pairs(_COLOURS) do
+		if rgba.a == colour.a and rgba.r == colour.r and rgba.g == colour.g and rgba.b == colour.b then
+			return text
+		end
+	end
+	return nil
+end
+
+
+function Mod_GetLowestScoreAlivePlayer(excludePlayer)
 	local lowestScorePlayer
-	for _, player in pairs(PLAYERS) do
-		if player.id ~= excludePlayerId and not Core_IsPlayerEliminated(player.id) then
-			if lowestScorePlayer == nil then
-				lowestScorePlayer = player
-			elseif player.score < lowestScorePlayer.score then
-				lowestScorePlayer = player
-			end
+	local players = Mod_GetAlivePlayers(excludePlayer)
+	for _, player in pairs(players) do
+		if lowestScorePlayer == nil then
+			lowestScorePlayer = player
+		elseif player.score < lowestScorePlayer.score then
+			lowestScorePlayer = player
 		end
 	end
 
 	return lowestScorePlayer
+end
+
+function Mod_GetAlivePlayers(excludePlayer)
+	local alivePlayers = {}
+	
+	for _, player in pairs(PLAYERS) do
+		if not Core_IsPlayerEliminated(player.id) and player.id.PlayerID ~= excludePlayer.id.PlayerID then
+			table.insert(alivePlayers, player)
+		end
+	end
+	
+	return alivePlayers
 end
 
 
@@ -162,6 +184,15 @@ function Mod_InterpretCommand(sender_player_id, command)
 	if player == nil then
 		print("Couldn't find player with colour", playerColour)
 		return
+	end
+	
+	if Core_IsPlayerEliminated(player.id) then
+		local formattedEvent = Loc_FormatText("$08e374bc36694e82a565c3f24e0ee6e0:32")
+		Mod_SendEventNotificationToPlayers(formattedEvent)
+		
+		local alivePlayers = Mod_GetAlivePlayers(player)
+		player = alivePlayers[World_GetRand(1, #alivePlayers)]
+		playerColour = Mod_GetColourByPlayer(player)
 	end
 
 	local translation = {}
@@ -280,6 +311,11 @@ function Mod_HandleBurnBuildings(player, playerColour)
 	local building_egroup = Player_GetAllEntities(player.id)
 	EGroup_Filter(building_egroup, "building", FILTER_KEEP)
 	local buildingCount = EGroup_Count(building_egroup)
+	
+	if buildingCount <= 0 then
+		-- This shouldn't happen but just in case
+		return
+	end
 
 	local index = World_GetRand(1, buildingCount)
 	local centralBuilding = EGroup_GetEntityAt(building_egroup, index)
@@ -456,7 +492,7 @@ end
 function Mod_HandleConvertUnitsToNextLowestScorePlayer(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(8, playerColour)
 
-	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player.id)
+	local lowestScorePlayer = Mod_GetLowestScoreAlivePlayer(player)
 	if lowestScorePlayer == nil then
 		return
 	end
