@@ -216,6 +216,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 	translation["Send stone"] = Mod_HandleSendStone
 	translation["Send nest of bees"] = Mod_HandleSendNestOfBees
 	translation["Kill wonder"] = Mod_HandleDeleteWonder
+	translation["Send siege towers"] = Mod_HandleSendSiegeTowers
 
 	if action == "test" then
 		print("test")
@@ -233,6 +234,12 @@ function Mod_InterpretCommand(sender_player_id, command)
 		return
 	end
 	func(player, playerColour)
+end
+
+
+function Mod_HandleSendSiegeTowers(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(34, playerColour)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_siege_tower_3_sul", Mod_CalculateNumUnits(1, 0.25))
 end
 
 
