@@ -59,6 +59,7 @@
 					<DataValue Name="EntityPrecacheItem">10855368926248558189</DataValue>
 					<DataValue Name="EntityPrecacheItem">15596454033014388054</DataValue>
 					<DataValue Name="EntityPrecacheItem">11506254699279172635</DataValue>
+					<DataValue Name="EntityPrecacheItem">7975698647588467804</DataValue>
 					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
 					<DataObject Name="" Type="EntityPrecacheItem" Id="5688470615943712965" OwnerId="5562827771909658441">
 						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
@@ -80,6 +81,18 @@
 							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="11216358474659162769" OwnerId="6897353403012520972">
 								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
 								<DataProperty Name="m_fileName" Type="String" Value="unit_bombard_4"/>
+							</DataObject>
+						</DataProperty>
+					</DataObject>
+					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
+					<DataObject Name="" Type="EntityPrecacheItem" Id="7975698647588467804" OwnerId="5562827771909658441">
+						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
+						<DataProperty Name="m_blueprint" Type="Object">
+							<DataValue Name="ReflectPBG_EntityProperties">5789296201759059081</DataValue>
+							<!--WinCondition/PrecacheList/EntityPrecacheItem/ReflectPBG_EntityProperties/-->
+							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="5789296201759059081" OwnerId="7975698647588467804">
+								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
+								<DataProperty Name="m_fileName" Type="String" Value="unit_siege_tower_3_sul"/>
 							</DataObject>
 						</DataProperty>
 					</DataObject>
