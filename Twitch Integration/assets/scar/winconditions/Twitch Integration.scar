@@ -464,7 +464,7 @@ end
 
 function Mod_HandleDeleteHouses(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(10, playerColour)
-	local numHouses = Mod_CalculateNumUnits(1, 0.1)
+	local numHouses = Mod_CalculateNumUnits(1, 0.2)
 	Mod_HandleDeleteEntities(player, {"house"}, numHouses, {"ger"})
 end
 
