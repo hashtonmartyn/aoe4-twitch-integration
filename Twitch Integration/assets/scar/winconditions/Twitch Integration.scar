@@ -218,6 +218,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 	translation["Kill wonder"] = Mod_HandleDeleteWonder
 	translation["Send siege towers"] = Mod_HandleSendSiegeTowers
 	translation["Kill military"] = Mod_HandleDeleteMilitary
+	translation["Send monks"] = Mod_HandleSendMonks
 
 	if action == "test" then
 		print("test")
@@ -234,7 +235,19 @@ function Mod_InterpretCommand(sender_player_id, command)
 		print("Couldn't find function for action", action)
 		return
 	end
-	func(player, playerColour)
+
+	local status, _ = pcall(func, player, playerColour)
+	if not status then
+		local errorMessage = Loc_FormatText("$08e374bc36694e82a565c3f24e0ee6e0:37")
+		Mod_SendEventNotificationToPlayers(errorMessage)
+	end
+end
+
+
+function Mod_HandleSendMonks(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(36, playerColour)
+	local numUnits = Mod_CalculateNumUnits(1, 0.25)
+	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_monk_3_rus", numUnits)
 end
 
 
