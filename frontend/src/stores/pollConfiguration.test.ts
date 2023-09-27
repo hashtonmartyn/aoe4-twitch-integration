@@ -31,7 +31,8 @@ describe("Poll Configuration Store", () => {
       "Send nest of bees: ",
       "Kill wonder: ",
       "Send siege towers: ",
-      "Kill military: "
+      "Kill military: ",
+      "Send monks: "
     ]
 
     expectedOptions.forEach(option => {
