@@ -47,6 +47,7 @@ const usePollConfigurationStore = defineStore("pollConfiguration", {
       "Send siege towers: ",
       "Kill military: ",
       "Send monks: ",
+      "Send photon boar: "
     ],
     numberOfPlayers: 2,
     players: {

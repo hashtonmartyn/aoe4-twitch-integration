@@ -219,6 +219,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 	translation["Send siege towers"] = Mod_HandleSendSiegeTowers
 	translation["Kill military"] = Mod_HandleDeleteMilitary
 	translation["Send monks"] = Mod_HandleSendMonks
+	translation["Send photon boar"] = Mod_HandleSpawnPhotonBoar
 
 	if action == "test" then
 		print("test")
@@ -248,6 +249,12 @@ function Mod_HandleSendMonks(player, playerColour)
 	Mod_SendEventNotificationToPlayersById(36, playerColour)
 	local numUnits = Mod_CalculateNumUnits(1, 0.25)
 	Mod_HandleSpawnUnitsOnPlayersTc(player, "unit_monk_3_rus", numUnits)
+end
+
+
+function Mod_HandleSpawnPhotonBoar(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(38, playerColour)
+	Mod_HandleSpawnUnitsOnPlayersVillagers(player, "08e374bc36694e82a565c3f24e0ee6e0:gaia_photon_boar", 1)
 end
 
 
