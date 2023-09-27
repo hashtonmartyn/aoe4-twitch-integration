@@ -217,6 +217,7 @@ function Mod_InterpretCommand(sender_player_id, command)
 	translation["Send nest of bees"] = Mod_HandleSendNestOfBees
 	translation["Kill wonder"] = Mod_HandleDeleteWonder
 	translation["Send siege towers"] = Mod_HandleSendSiegeTowers
+	translation["Kill military"] = Mod_HandleDeleteMilitary
 
 	if action == "test" then
 		print("test")
@@ -234,6 +235,13 @@ function Mod_InterpretCommand(sender_player_id, command)
 		return
 	end
 	func(player, playerColour)
+end
+
+
+function Mod_HandleDeleteMilitary(player, playerColour)
+	Mod_SendEventNotificationToPlayersById(35, playerColour)
+	local numUnits = Mod_CalculateNumUnits(1, 1)
+	Mod_HandleDeleteEntities(player, {"military"}, numUnits, {})
 end
 
 
@@ -489,14 +497,8 @@ function Mod_HandleDeleteEntities(player, keepFilters, numEntities, removeFilter
 
 	local eGroupCount = EGroup_Count(player_entgroupobs)
 
-	for i=1,numEntities,1 do
-		if i > eGroupCount then
-			return
-		end
-
-		local index = World_GetRand(1, eGroupCount)
+	for index=1,math.min(numEntities, eGroupCount),1 do
 		local entity = EGroup_GetEntityAt(player_entgroupobs, index)
-
 		Entity_Kill(entity)
 	end
 end
