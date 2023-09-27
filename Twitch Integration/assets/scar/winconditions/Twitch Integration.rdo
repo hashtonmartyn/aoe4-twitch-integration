@@ -39,7 +39,7 @@
 				<DataProperty Name="m_locStringKey" Type="Int32" Value="3"/>
 			</DataObject>
 		</DataProperty>
-		<DataProperty Name="m_tuningModGUID" Type="String" Value=""/>
+		<DataProperty Name="m_tuningModGUID" Type="String" Value="08e374bc36694e82a565c3f24e0ee6e0"/>
 		<DataProperty Name="m_optionsUIDescriptor" Type="Object">
 			<DataValue Name="WinCondition::OptionsUIDescriptor">5343237115413669536</DataValue>
 			<!--WinCondition/WinCondition::OptionsUIDescriptor/-->
@@ -61,6 +61,7 @@
 					<DataValue Name="EntityPrecacheItem">11506254699279172635</DataValue>
 					<DataValue Name="EntityPrecacheItem">7975698647588467804</DataValue>
 					<DataValue Name="EntityPrecacheItem">7954788601251465907</DataValue>
+					<DataValue Name="EntityPrecacheItem">8305058510272257969</DataValue>
 					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
 					<DataObject Name="" Type="EntityPrecacheItem" Id="5688470615943712965" OwnerId="5562827771909658441">
 						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
@@ -106,6 +107,18 @@
 							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="5789296201759059081" OwnerId="7975698647588467804">
 								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
 								<DataProperty Name="m_fileName" Type="String" Value="unit_siege_tower_3_sul"/>
+							</DataObject>
+						</DataProperty>
+					</DataObject>
+					<!--WinCondition/PrecacheList/EntityPrecacheItem/-->
+					<DataObject Name="" Type="EntityPrecacheItem" Id="8305058510272257969" OwnerId="5562827771909658441">
+						<DataProperty Name="#BaseTypes" Type="String" Value="IPrecacheItem#0|"/>
+						<DataProperty Name="m_blueprint" Type="Object">
+							<DataValue Name="ReflectPBG_EntityProperties">3058799105522961450</DataValue>
+							<!--WinCondition/PrecacheList/EntityPrecacheItem/ReflectPBG_EntityProperties/-->
+							<DataObject Name="" Type="ReflectPBG_EntityProperties" Id="3058799105522961450" OwnerId="8305058510272257969">
+								<DataProperty Name="#BaseTypes" Type="String" Value="PropertyBagGroupReflectReference#0|Provider_PropertyBagGroup#0|"/>
+								<DataProperty Name="m_fileName" Type="String" Value="08e374bc36694e82a565c3f24e0ee6e0:gaia_photon_boar"/>
 							</DataObject>
 						</DataProperty>
 					</DataObject>
